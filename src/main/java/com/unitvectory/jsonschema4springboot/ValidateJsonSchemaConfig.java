@@ -14,7 +14,6 @@
 package com.unitvectory.jsonschema4springboot;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.networknt.schema.SpecVersion;
 import lombok.Builder;
 import lombok.Value;
 
@@ -31,11 +30,8 @@ public class ValidateJsonSchemaConfig {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Builder.Default
-    private final SpecVersion.VersionFlag specVersion = SpecVersion.VersionFlag.V7;
+    private final JsonSchemaCache cache = JsonSchemaCacheDefault.newInstance();
 
     @Builder.Default
-    private final JsonSchemaCache cache = new JsonSchemaCacheDefault();
-
-    @Builder.Default
-    private final JsonSchemaLookup lookup = new JsonSchemaLookupDefault();
+    private final JsonSchemaLookup lookup = JsonSchemaLookupDefault.newInstance();
 }

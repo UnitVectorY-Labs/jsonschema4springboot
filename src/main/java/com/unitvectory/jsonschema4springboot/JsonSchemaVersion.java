@@ -13,31 +13,45 @@
  */
 package com.unitvectory.jsonschema4springboot;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.networknt.schema.SpecVersion;
+import com.networknt.schema.SpecVersion.VersionFlag;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 /**
- * Validate the JSON Schema
+ * The JSON Schema version
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-@Target({ElementType.PARAMETER})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ValidateJsonSchema {
+@AllArgsConstructor
+public enum JsonSchemaVersion {
 
     /**
-     * The path to the schema
-     * 
-     * @return the path
+     * Version 4.
      */
-    String schemaPath();
+    V4(VersionFlag.V4),
 
     /**
-     * The JSON Schema version of the schema
-     * 
-     * @return the JSON Schema version
+     * Version 6
      */
-    JsonSchemaVersion version();
+    V6(VersionFlag.V6),
+
+    /**
+     * Version 7
+     */
+    V7(VersionFlag.V7),
+
+    /**
+     * Version 2019-09
+     */
+    V201909(VersionFlag.V201909),
+
+    /**
+     * Version 2020-12
+     */
+    V202012(VersionFlag.V202012);
+
+    @Getter(AccessLevel.PACKAGE)
+    private final SpecVersion.VersionFlag specVersion;
 }

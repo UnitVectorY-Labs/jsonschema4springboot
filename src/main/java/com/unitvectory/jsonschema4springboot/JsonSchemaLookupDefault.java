@@ -16,9 +16,11 @@ package com.unitvectory.jsonschema4springboot;
 import java.io.InputStream;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion.VersionFlag;
+import lombok.NonNull;
 
 /**
  * JSON Schema lookup interface.
@@ -29,6 +31,58 @@ import com.networknt.schema.SpecVersion.VersionFlag;
  */
 public class JsonSchemaLookupDefault implements JsonSchemaLookup {
 
+    private final ResourceLoader resourceLoader;
+
+    /**
+     * Creates a new instance of the JsonSchemaLookupDefault class.
+     */
+    private JsonSchemaLookupDefault() {
+        this.resourceLoader = null;
+    }
+
+    /**
+     * Creates a new instance of the JsonSchemaLookupDefault class.
+     * 
+     * @param resourceLoader the resource loader
+     */
+    private JsonSchemaLookupDefault(ResourceLoader resourceLoader) {
+        this.resourceLoader = resourceLoader;
+    }
+
+    /**
+     * Creates a new instance of the JsonSchemaLookupDefault class.
+     * 
+     * @return the instance
+     */
+    public static JsonSchemaLookup newInstance() {
+        return new JsonSchemaLookupDefault();
+    }
+
+    /**
+     * Creates a new instance of the JsonSchemaLookupDefault class.
+     * 
+     * @param resourceLoader the Spring Boot resource loader
+     * @return the instance
+     */
+    public static JsonSchemaLookup newInstance(@NonNull ResourceLoader resourceLoader) {
+        return new JsonSchemaLookupDefault(resourceLoader);
+    }
+
+    /**
+     * Load in a resource from the specified loader, if no loader is specified a class path resource
+     * will be loaded.
+     * 
+     * @param path the path
+     * @return the resource
+     */
+    private Resource loadResource(String path) {
+        if (resourceLoader != null) {
+            return resourceLoader.getResource(path);
+        } else {
+            return new ClassPathResource(path);
+        }
+    }
+
     @Override
     public JsonSchema getSchema(VersionFlag version, String path)
             throws ValidateJsonSchemaException {
@@ -36,7 +90,7 @@ public class JsonSchemaLookupDefault implements JsonSchemaLookup {
         JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(version);
 
         // Load the resource from the class path
-        Resource resource = new ClassPathResource(path);
+        Resource resource = this.loadResource(path);
         if (!resource.exists()) {
             throw new ValidateJsonSchemaException("JSON Schema not found at path: " + path);
         }

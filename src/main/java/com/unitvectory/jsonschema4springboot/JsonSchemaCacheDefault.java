@@ -26,7 +26,26 @@ import com.networknt.schema.JsonSchema;
  */
 class JsonSchemaCacheDefault implements JsonSchemaCache {
 
-    private Map<String, JsonSchema> cache = new ConcurrentHashMap<>();
+    /**
+     * The JSON Schema cache.
+     */
+    private Map<String, JsonSchema> cache;
+
+    /**
+     * Creates a new instance of the JsonSchemaCacheDefault class.
+     */
+    private JsonSchemaCacheDefault() {
+        this.cache = new ConcurrentHashMap<>();
+    }
+
+    /**
+     * Creates a new instance of the JsonSchemaCacheDefault class.
+     * 
+     * @return the instance
+     */
+    public static JsonSchemaCache newInstance() {
+        return new JsonSchemaCacheDefault();
+    }
 
     @Override
     public JsonSchema getSchema(String path) {

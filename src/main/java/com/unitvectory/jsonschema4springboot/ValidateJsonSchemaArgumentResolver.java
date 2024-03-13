@@ -15,7 +15,6 @@ package com.unitvectory.jsonschema4springboot;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
-import javax.servlet.http.HttpServletRequest;
 import org.springframework.core.MethodParameter;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -25,20 +24,40 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.ValidationMessage;
-import lombok.AllArgsConstructor;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.NonNull;
 
 /**
  * The argument resolver that supports JSON Schema validation.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-@AllArgsConstructor
 public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgumentResolver {
 
     /**
      * The configuration
      */
     private final ValidateJsonSchemaConfig config;
+
+    /**
+     * Creates a new instance of the ValidateJsonSchemaArgumentResolver class
+     * 
+     * @param config the config
+     */
+    private ValidateJsonSchemaArgumentResolver(ValidateJsonSchemaConfig config) {
+        this.config = config;
+    }
+
+    /**
+     * Creates a new instance of the ValidateJsonSchemaArgumentResolver class
+     * 
+     * @param config the config
+     * @return the ValidateJsonSchemaArgumentResolver
+     */
+    public static ValidateJsonSchemaArgumentResolver newInstance(
+            @NonNull ValidateJsonSchemaConfig config) {
+        return new ValidateJsonSchemaArgumentResolver(config);
+    }
 
     @Override
     public final boolean supportsParameter(MethodParameter parameter) {
@@ -50,13 +69,18 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
     public final Object resolveArgument(MethodParameter parameter,
             ModelAndViewContainer mavContainer, NativeWebRequest webRequest,
             WebDataBinderFactory binderFactory) throws Exception {
+
         // Get the annotation
-        String schemaPath = parameter.getParameterAnnotation(ValidateJsonSchema.class).schemaPath();
+        ValidateJsonSchema validateJsonSchema =
+                parameter.getParameterAnnotation(ValidateJsonSchema.class);
+        String schemaPath = validateJsonSchema.schemaPath();
+        JsonSchemaVersion jsonSchemaVersion = validateJsonSchema.version();
 
         // First try the cache
         JsonSchema schema = this.config.getCache().getSchema(schemaPath);
         if (schema == null) {
-            schema = this.config.getLookup().getSchema(this.config.getSpecVersion(), schemaPath);
+            schema = this.config.getLookup().getSchema(jsonSchemaVersion.getSpecVersion(),
+                    schemaPath);
 
             // Failed to get the
             if (schema == null) {

@@ -24,22 +24,46 @@ import lombok.Getter;
  */
 public class ValidateJsonSchemaException extends Exception {
 
+    /**
+     * The validation messages when the JSON Schema does not validate.
+     */
     @Getter
     private Set<ValidationMessage> validationResult;
 
+    /**
+     * Creates a new instance of the ValidateJsonSchemaException class
+     * 
+     * @param validationResult the validation messages
+     */
     public ValidateJsonSchemaException(Set<ValidationMessage> validationResult) {
         super("JSON Schema Validation Failed");
         this.validationResult = validationResult;
     }
 
+    /**
+     * Creates a new instance of the ValidateJsonSchemaException class
+     * 
+     * @param message the exception message
+     */
     public ValidateJsonSchemaException(String message) {
         super(message);
     }
 
+    /**
+     * Creates a new instance of the ValidateJsonSchemaException class
+     * 
+     * @param message the exception message
+     * @param cause the cause
+     */
     public ValidateJsonSchemaException(String message, Throwable cause) {
         super(message, cause);
     }
 
+    /**
+     * Creates a new instance of the ValidateJsonSchemaException class
+     * 
+     * @param cause the cause
+     */
     public ValidateJsonSchemaException(Throwable cause) {
         super(cause);
     }
