@@ -13,11 +13,28 @@
  */
 package com.unitvectory.jsonschema4springboot;
 
+import com.networknt.schema.JsonSchema;
+
 /**
- * Check the JSON Schema
+ * JSON Schema Cache interface.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-public @interface CheckJsonSchema {
+public interface JsonSchemaCache {
 
+    /**
+     * Get a cached schema.
+     * 
+     * @param path the path
+     * @return the JsonSchema; null if not found
+     */
+    JsonSchema getSchema(String path);
+
+    /**
+     * Cache a JsonSchema
+     * 
+     * @param path the path
+     * @param schema the JsonSchema
+     */
+    void cacheSchema(String path, JsonSchema schema);
 }
