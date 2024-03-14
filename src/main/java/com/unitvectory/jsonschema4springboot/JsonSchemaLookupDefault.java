@@ -84,23 +84,21 @@ public class JsonSchemaLookupDefault implements JsonSchemaLookup {
     }
 
     @Override
-    public JsonSchema getSchema(VersionFlag version, String path)
-            throws ValidateJsonSchemaException {
+    public JsonSchema getSchema(VersionFlag version, String path) {
         // Get the factory for the specified version
         JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(version);
 
         // Load the resource from the class path
         Resource resource = this.loadResource(path);
         if (!resource.exists()) {
-            throw new ValidateJsonSchemaException("JSON Schema not found at path: " + path);
+            throw new LoadJsonSchemaException("JSON Schema not found at path: " + path);
         }
 
         // Load the schema
         try (InputStream schemaStream = resource.getInputStream()) {
             return schemaFactory.getSchema(schemaStream);
         } catch (Exception e) {
-            throw new ValidateJsonSchemaException("JSON Schema failed to load from path: " + path,
-                    e);
+            throw new LoadJsonSchemaException("JSON Schema failed to load from path: " + path, e);
         }
     }
 }

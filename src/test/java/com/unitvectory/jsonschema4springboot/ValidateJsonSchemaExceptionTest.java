@@ -13,31 +13,22 @@
  */
 package com.unitvectory.jsonschema4springboot;
 
-import java.util.Set;
-import com.networknt.schema.ValidationMessage;
-import lombok.Getter;
-import lombok.NonNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.Test;
 
 /**
- * Validate JSON Schema Exception
+ * The ValidateJsonSchemaException test cases.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-public class ValidateJsonSchemaException extends RuntimeException {
+public class ValidateJsonSchemaExceptionTest {
 
-    /**
-     * The validation messages when the JSON Schema does not validate.
-     */
-    @Getter
-    private Set<ValidationMessage> validationResult;
+    @Test
+    public void nullValidationResultsTest() {
+        NullPointerException thrown = assertThrows(NullPointerException.class,
+                () -> new ValidateJsonSchemaException(null));
 
-    /**
-     * Creates a new instance of the ValidateJsonSchemaException class
-     * 
-     * @param validationResult the validation messages
-     */
-    public ValidateJsonSchemaException(@NonNull Set<ValidationMessage> validationResult) {
-        super("JSON did not validate against JSON Schema");
-        this.validationResult = validationResult;
+        assertEquals("validationResult is marked non-null but is null", thrown.getMessage());
     }
 }

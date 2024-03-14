@@ -13,31 +13,29 @@
  */
 package com.unitvectory.jsonschema4springboot;
 
-import java.util.Set;
-import com.networknt.schema.ValidationMessage;
-import lombok.Getter;
-import lombok.NonNull;
-
 /**
- * Validate JSON Schema Exception
+ * Load JSON Schema Exception
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-public class ValidateJsonSchemaException extends RuntimeException {
+public class LoadJsonSchemaException extends RuntimeException {
 
     /**
-     * The validation messages when the JSON Schema does not validate.
-     */
-    @Getter
-    private Set<ValidationMessage> validationResult;
-
-    /**
-     * Creates a new instance of the ValidateJsonSchemaException class
+     * Creates a new instance of the LoadJsonSchemaException class
      * 
-     * @param validationResult the validation messages
+     * @param message the exception message
      */
-    public ValidateJsonSchemaException(@NonNull Set<ValidationMessage> validationResult) {
-        super("JSON did not validate against JSON Schema");
-        this.validationResult = validationResult;
+    public LoadJsonSchemaException(String message) {
+        super(message);
+    }
+
+    /**
+     * Creates a new instance of the LoadJsonSchemaException class
+     * 
+     * @param message the exception message
+     * @param cause the cause
+     */
+    public LoadJsonSchemaException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

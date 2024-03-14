@@ -13,23 +13,29 @@
  */
 package com.unitvectory.jsonschema4springboot;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import org.junit.jupiter.api.Test;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.SpecVersion.VersionFlag;
 
 /**
- * JSON Schema lookup interface.
+ * The JsonSchemaCacheDefault test cases.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-public interface JsonSchemaLookup {
+public class JsonSchemaCacheDefaultTest {
 
-    /**
-     * Get a cached schema.
-     * 
-     * @param version the JSON Schema version
-     * @param path the path
-     * @return the JsonSchema; null if not found
-     * @throws ValidateJsonSchemaException schema was unable to be loaded
-     */
-    JsonSchema getSchema(VersionFlag version, String path);
+
+    @Test
+    public void testCache() {
+        String path = "simpleschemaV7.json";
+        JsonSchema jsonSchema =
+                JsonSchemaLookupDefault.newInstance().getSchema(VersionFlag.V7, path);
+        assertNotNull(jsonSchema);
+        JsonSchemaCache cache = JsonSchemaCacheDefault.newInstance();
+        assertNull(cache.getSchema(path));
+        cache.cacheSchema(path, jsonSchema);
+        assertNotNull(cache.getSchema(path));
+    }
 }

@@ -22,6 +22,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.ValidationMessage;
 import jakarta.servlet.http.HttpServletRequest;
@@ -70,6 +71,10 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
             ModelAndViewContainer mavContainer, NativeWebRequest webRequest,
             WebDataBinderFactory binderFactory) throws Exception {
 
+        ObjectMapper objectMapper = this.config.getObjectMapper();
+        JsonSchemaCache cache = this.config.getCache();
+        JsonSchemaLookup lookup = this.config.getLookup();
+
         // Get the annotation
         ValidateJsonSchema validateJsonSchema =
                 parameter.getParameterAnnotation(ValidateJsonSchema.class);
@@ -77,18 +82,17 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
         JsonSchemaVersion jsonSchemaVersion = validateJsonSchema.version();
 
         // First try the cache
-        JsonSchema schema = this.config.getCache().getSchema(schemaPath);
+        JsonSchema schema = cache.getSchema(schemaPath);
         if (schema == null) {
-            schema = this.config.getLookup().getSchema(jsonSchemaVersion.getSpecVersion(),
-                    schemaPath);
+            schema = lookup.getSchema(jsonSchemaVersion.getSpecVersion(), schemaPath);
 
             // Failed to get the
             if (schema == null) {
-                throw new ValidateJsonSchemaException("Failed to load JSON Schema");
+                throw new LoadJsonSchemaException("Failed to load JSON Schema");
             }
 
             // Cache the value
-            this.config.getCache().cacheSchema(schemaPath, schema);
+            cache.cacheSchema(schemaPath, schema);
         }
 
         // Get the JSON as a String
@@ -98,13 +102,13 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
                 StandardCharsets.UTF_8);
 
         // Parse into a JsonNode, needed for validation
-        JsonNode json = this.config.getObjectMapper().readTree(jsonString);
+        JsonNode json = objectMapper.readTree(jsonString);
 
         // Validate the Json
         Set<ValidationMessage> validationResult = schema.validate(json);
         if (validationResult.isEmpty()) {
             // Convert the JSON into the object
-            return this.config.getObjectMapper().treeToValue(json, parameter.getParameterType());
+            return objectMapper.treeToValue(json, parameter.getParameterType());
         } else {
             // Throw the validation exception
             throw new ValidateJsonSchemaException(validationResult);
