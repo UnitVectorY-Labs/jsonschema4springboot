@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.ResourceLoader;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.SpecVersion.VersionFlag;
 
@@ -64,8 +65,10 @@ public class JsonSchemaLookupDefaultTest {
 
     @Test
     public void instanceNullTest() {
+        ResourceLoader resourceLoader = null;
         NullPointerException thrown = assertThrows(NullPointerException.class,
-                () -> JsonSchemaLookupDefault.newInstance(null), "New instance must be null");
+                () -> JsonSchemaLookupDefault.newInstance(resourceLoader),
+                "New instance must be null");
 
         assertEquals("resourceLoader is marked non-null but is null", thrown.getMessage());
     }

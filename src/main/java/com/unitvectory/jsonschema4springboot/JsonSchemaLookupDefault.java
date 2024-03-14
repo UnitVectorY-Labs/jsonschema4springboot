@@ -19,6 +19,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SchemaValidatorsConfig;
 import com.networknt.schema.SpecVersion.VersionFlag;
 import lombok.NonNull;
 
@@ -33,20 +34,25 @@ public class JsonSchemaLookupDefault implements JsonSchemaLookup {
 
     private final ResourceLoader resourceLoader;
 
+    private final SchemaValidatorsConfig schemaValidatorsConfig;
+
     /**
      * Creates a new instance of the JsonSchemaLookupDefault class.
      */
     private JsonSchemaLookupDefault() {
-        this.resourceLoader = null;
+        this(null, null);
     }
 
     /**
      * Creates a new instance of the JsonSchemaLookupDefault class.
      * 
      * @param resourceLoader the resource loader
+     * @param schemaValidatorsConfig the schema validators config
      */
-    private JsonSchemaLookupDefault(ResourceLoader resourceLoader) {
+    private JsonSchemaLookupDefault(ResourceLoader resourceLoader,
+            SchemaValidatorsConfig schemaValidatorsConfig) {
         this.resourceLoader = resourceLoader;
+        this.schemaValidatorsConfig = schemaValidatorsConfig;
     }
 
     /**
@@ -65,7 +71,30 @@ public class JsonSchemaLookupDefault implements JsonSchemaLookup {
      * @return the instance
      */
     public static JsonSchemaLookup newInstance(@NonNull ResourceLoader resourceLoader) {
-        return new JsonSchemaLookupDefault(resourceLoader);
+        return new JsonSchemaLookupDefault(resourceLoader, null);
+    }
+
+    /**
+     * Creates a new instance of the JsonSchemaLookupDefault class.
+     * 
+     * @param schemaValidatorsConfig the schema validators config
+     * @return the instance
+     */
+    public static JsonSchemaLookup newInstance(
+            @NonNull SchemaValidatorsConfig schemaValidatorsConfig) {
+        return new JsonSchemaLookupDefault(null, schemaValidatorsConfig);
+    }
+
+    /**
+     * Creates a new instance of the JsonSchemaLookupDefault class.
+     * 
+     * @param resourceLoader the Spring Boot resource loader
+     * @param schemaValidatorsConfig the schema validators config
+     * @return the instance
+     */
+    public static JsonSchemaLookup newInstance(@NonNull ResourceLoader resourceLoader,
+            @NonNull SchemaValidatorsConfig schemaValidatorsConfig) {
+        return new JsonSchemaLookupDefault(resourceLoader, schemaValidatorsConfig);
     }
 
     /**
@@ -96,7 +125,11 @@ public class JsonSchemaLookupDefault implements JsonSchemaLookup {
 
         // Load the schema
         try (InputStream schemaStream = resource.getInputStream()) {
-            return schemaFactory.getSchema(schemaStream);
+            if (this.schemaValidatorsConfig == null) {
+                return schemaFactory.getSchema(schemaStream);
+            } else {
+                return schemaFactory.getSchema(schemaStream, this.schemaValidatorsConfig);
+            }
         } catch (Exception e) {
             throw new LoadJsonSchemaException("JSON Schema failed to load from path: " + path, e);
         }

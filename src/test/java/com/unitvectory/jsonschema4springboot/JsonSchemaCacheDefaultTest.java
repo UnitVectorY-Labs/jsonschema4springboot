@@ -26,7 +26,6 @@ import com.networknt.schema.SpecVersion.VersionFlag;
  */
 public class JsonSchemaCacheDefaultTest {
 
-
     @Test
     public void testCache() {
         String path = "simpleschemaV7.json";
