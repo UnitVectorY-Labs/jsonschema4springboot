@@ -104,6 +104,7 @@ public class JsonSchemaLookupDefault implements JsonSchemaLookup {
      * @param path the path
      * @return the resource
      */
+    @SuppressWarnings("null")
     private Resource loadResource(String path) {
         if (resourceLoader != null) {
             return resourceLoader.getResource(path);

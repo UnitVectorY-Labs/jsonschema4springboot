@@ -60,12 +60,14 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
         return new ValidateJsonSchemaArgumentResolver(config);
     }
 
+    @SuppressWarnings("null")
     @Override
     public final boolean supportsParameter(MethodParameter parameter) {
         // Only applies to ValidateJsonSchema annotation
         return parameter.hasParameterAnnotation(ValidateJsonSchema.class);
     }
 
+    @SuppressWarnings("null")
     @Override
     public final Object resolveArgument(MethodParameter parameter,
             ModelAndViewContainer mavContainer, NativeWebRequest webRequest,
