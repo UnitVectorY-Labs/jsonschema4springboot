@@ -27,6 +27,7 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.ModelAndViewContainer;
 import com.networknt.schema.JsonSchema;
+import com.networknt.schema.ValidationMessage;
 import com.networknt.schema.SpecVersion.VersionFlag;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -113,13 +114,17 @@ public class ValidateJsonSchemaArgumentResolverTest {
         ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver
                 .newInstance(ValidateJsonSchemaConfig.builder().build());
 
-
         ValidateJsonSchemaException thrown = assertThrows(ValidateJsonSchemaException.class,
                 () -> resolveArgument(resolver, ExampleValue.class, "{}", JsonSchemaVersion.V7,
                         "simpleschemaV7.json"),
                 "Invalid JSON expected ValidateJsonSchemaException exception");
 
         assertEquals("JSON did not validate against JSON Schema", thrown.getMessage());
+
+        assertEquals(1, thrown.getValidationResult().size());
+
+        ValidationMessage validationMessage = thrown.getValidationResult().iterator().next();
+        assertEquals("$: required property 'value' not found", validationMessage.getMessage());
     }
 
     private Object resolveArgument(ValidateJsonSchemaArgumentResolver resolver,
@@ -130,7 +135,8 @@ public class ValidateJsonSchemaArgumentResolverTest {
         ModelAndViewContainer mavContainer = null;
         WebDataBinderFactory binderFactory = null;
 
-        // Mock everything so this can be tested outside of the typical Spring Boot implementation
+        // Mock everything so this can be tested outside of the typical Spring Boot
+        // implementation
 
         ValidateJsonSchema validateJsonSchema = mock(ValidateJsonSchema.class);
         when(validateJsonSchema.version()).thenReturn(schemaVersion);
