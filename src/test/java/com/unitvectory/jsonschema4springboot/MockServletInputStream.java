@@ -55,4 +55,9 @@ class MockServletInputStream extends ServletInputStream {
         return this.inputStream.read();
     }
 
+    @Override
+    public void close() throws IOException {
+        this.inputStream.close();
+    }
+
 }

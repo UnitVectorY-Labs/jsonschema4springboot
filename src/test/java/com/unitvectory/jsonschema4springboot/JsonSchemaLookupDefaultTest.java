@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import com.networknt.schema.JsonSchema;
+import com.networknt.schema.SchemaValidatorsConfig;
 import com.networknt.schema.SpecVersion.VersionFlag;
 
 /**
@@ -29,47 +30,104 @@ import com.networknt.schema.SpecVersion.VersionFlag;
  */
 public class JsonSchemaLookupDefaultTest {
 
-    @Test
-    public void loadSchemaTest() {
-        JsonSchema jsonSchema = JsonSchemaLookupDefault.newInstance().getSchema(VersionFlag.V7,
-                "simpleschemaV7.json");
-        assertNotNull(jsonSchema);
-    }
+        @Test
+        public void loadSchemaTest() {
+                JsonSchema jsonSchema = JsonSchemaLookupDefault.newInstance()
+                                .getSchema(VersionFlag.V7, "simpleschemaV7.json");
+                assertNotNull(jsonSchema);
+        }
 
-    @Test
-    public void loadSchemaNotExistTest() {
-        LoadJsonSchemaException thrown = assertThrows(LoadJsonSchemaException.class,
-                () -> JsonSchemaLookupDefault.newInstance().getSchema(VersionFlag.V7,
-                        "doesnotexist.json"),
-                "Expected getSchema to throw exception for file that does not exit");
+        @Test
+        public void loadSchemaNotExistTest() {
+                LoadJsonSchemaException thrown = assertThrows(LoadJsonSchemaException.class,
+                                () -> JsonSchemaLookupDefault.newInstance()
+                                                .getSchema(VersionFlag.V7, "doesnotexist.json"),
+                                "Expected getSchema to throw exception for file that does not exit");
 
-        assertEquals("JSON Schema not found at path: doesnotexist.json", thrown.getMessage());
-    }
+                assertEquals("JSON Schema not found at path: doesnotexist.json",
+                                thrown.getMessage());
+        }
 
-    @Test
-    public void loadSchemaInvalidSchemaTest() {
-        LoadJsonSchemaException thrown = assertThrows(LoadJsonSchemaException.class,
-                () -> JsonSchemaLookupDefault.newInstance().getSchema(VersionFlag.V7,
-                        "notaschemafile"),
-                "Expected getSchema to throw exception for file is not a valid schema");
+        @Test
+        public void loadSchemaInvalidSchemaTest() {
+                LoadJsonSchemaException thrown = assertThrows(LoadJsonSchemaException.class,
+                                () -> JsonSchemaLookupDefault.newInstance()
+                                                .getSchema(VersionFlag.V7, "notaschemafile"),
+                                "Expected getSchema to throw exception for file is not a valid schema");
 
-        assertEquals("JSON Schema failed to load from path: notaschemafile", thrown.getMessage());
-    }
+                assertEquals("JSON Schema failed to load from path: notaschemafile",
+                                thrown.getMessage());
+        }
 
-    @Test
-    public void defaultResourceLoaderTest() {
-        JsonSchema jsonSchema = JsonSchemaLookupDefault.newInstance(new DefaultResourceLoader())
-                .getSchema(VersionFlag.V7, "simpleschemaV7.json");
-        assertNotNull(jsonSchema);
-    }
+        @Test
+        public void loadSchemaInvalidSchemaWithSchemaValidatorsConfigTest() {
+                LoadJsonSchemaException thrown = assertThrows(LoadJsonSchemaException.class,
+                                () -> JsonSchemaLookupDefault
+                                                .newInstance(new SchemaValidatorsConfig())
+                                                .getSchema(VersionFlag.V7, "notaschemafile"),
+                                "Expected getSchema to throw exception for file is not a valid schema");
 
-    @Test
-    public void instanceNullTest() {
-        ResourceLoader resourceLoader = null;
-        NullPointerException thrown = assertThrows(NullPointerException.class,
-                () -> JsonSchemaLookupDefault.newInstance(resourceLoader),
-                "New instance must be null");
+                assertEquals("JSON Schema failed to load from path: notaschemafile",
+                                thrown.getMessage());
+        }
 
-        assertEquals("resourceLoader is marked non-null but is null", thrown.getMessage());
-    }
+        @Test
+        public void loaderTest() {
+                JsonSchema jsonSchema = JsonSchemaLookupDefault
+                                .newInstance(new DefaultResourceLoader(),
+                                                new SchemaValidatorsConfig())
+                                .getSchema(VersionFlag.V7, "simpleschemaV7.json");
+                assertNotNull(jsonSchema);
+        }
+
+        @Test
+        public void defaultResourceLoaderTest() {
+                JsonSchema jsonSchema =
+                                JsonSchemaLookupDefault.newInstance(new DefaultResourceLoader())
+                                                .getSchema(VersionFlag.V7, "simpleschemaV7.json");
+                assertNotNull(jsonSchema);
+        }
+
+        @Test
+        public void schemaValidatorsConfigTest() {
+                JsonSchema jsonSchema =
+                                JsonSchemaLookupDefault.newInstance(new SchemaValidatorsConfig())
+                                                .getSchema(VersionFlag.V7, "simpleschemaV7.json");
+                assertNotNull(jsonSchema);
+        }
+
+        @Test
+        public void instanceNullResourceLoaderTest() {
+                ResourceLoader resourceLoader = null;
+                NullPointerException thrown = assertThrows(NullPointerException.class,
+                                () -> JsonSchemaLookupDefault.newInstance(resourceLoader),
+                                "New instance must be null");
+
+                assertEquals("resourceLoader is marked non-null but is null", thrown.getMessage());
+
+                thrown = assertThrows(NullPointerException.class,
+                                () -> JsonSchemaLookupDefault.newInstance(resourceLoader,
+                                                new SchemaValidatorsConfig()),
+                                "New instance must be null");
+
+                assertEquals("resourceLoader is marked non-null but is null", thrown.getMessage());
+        }
+
+        @Test
+        public void instanceNullSchemaValidatorsConfigTest() {
+                SchemaValidatorsConfig schemaValidatorsConfig = null;
+                NullPointerException thrown = assertThrows(NullPointerException.class,
+                                () -> JsonSchemaLookupDefault.newInstance(schemaValidatorsConfig),
+                                "New instance must be null");
+
+                assertEquals("schemaValidatorsConfig is marked non-null but is null",
+                                thrown.getMessage());
+
+                thrown = assertThrows(NullPointerException.class, () -> JsonSchemaLookupDefault
+                                .newInstance(new DefaultResourceLoader(), schemaValidatorsConfig),
+                                "New instance must be null");
+
+                assertEquals("schemaValidatorsConfig is marked non-null but is null",
+                                thrown.getMessage());
+        }
 }

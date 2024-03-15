@@ -125,14 +125,20 @@ public class JsonSchemaLookupDefault implements JsonSchemaLookup {
         }
 
         // Load the schema
-        try (InputStream schemaStream = resource.getInputStream()) {
-            if (this.schemaValidatorsConfig == null) {
+        if (this.schemaValidatorsConfig == null) {
+            try (InputStream schemaStream = resource.getInputStream()) {
                 return schemaFactory.getSchema(schemaStream);
-            } else {
-                return schemaFactory.getSchema(schemaStream, this.schemaValidatorsConfig);
+            } catch (Exception e) {
+                throw new LoadJsonSchemaException("JSON Schema failed to load from path: " + path,
+                        e);
             }
-        } catch (Exception e) {
-            throw new LoadJsonSchemaException("JSON Schema failed to load from path: " + path, e);
+        } else {
+            try (InputStream schemaStream = resource.getInputStream()) {
+                return schemaFactory.getSchema(schemaStream, this.schemaValidatorsConfig);
+            } catch (Exception e) {
+                throw new LoadJsonSchemaException("JSON Schema failed to load from path: " + path,
+                        e);
+            }
         }
     }
 }

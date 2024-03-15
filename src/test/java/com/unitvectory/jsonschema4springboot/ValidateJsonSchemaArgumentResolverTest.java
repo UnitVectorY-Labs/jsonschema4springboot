@@ -38,122 +38,133 @@ import jakarta.servlet.http.HttpServletRequest;
  */
 public class ValidateJsonSchemaArgumentResolverTest {
 
-    @Test
-    public void missingConfigTest() {
-        NullPointerException thrown = assertThrows(NullPointerException.class,
-                () -> ValidateJsonSchemaArgumentResolver.newInstance(null),
-                "ValidateJsonSchemaArgumentResolver config cannot be null");
+        @Test
+        public void missingConfigTest() {
+                NullPointerException thrown = assertThrows(NullPointerException.class,
+                                () -> ValidateJsonSchemaArgumentResolver.newInstance(null),
+                                "ValidateJsonSchemaArgumentResolver config cannot be null");
 
-        assertEquals("config is marked non-null but is null", thrown.getMessage());
-    }
+                assertEquals("config is marked non-null but is null", thrown.getMessage());
+        }
 
-    @Test
-    public void supportsParamTrueTest() {
-        ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver
-                .newInstance(ValidateJsonSchemaConfig.builder().build());
+        @Test
+        public void supportsParamTrueTest() {
+                ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver
+                                .newInstance(ValidateJsonSchemaConfig.builder().build());
 
-        MethodParameter parameter = mock(MethodParameter.class);
-        when(parameter.hasParameterAnnotation(ValidateJsonSchema.class)).thenReturn(true);
+                MethodParameter parameter = mock(MethodParameter.class);
+                when(parameter.hasParameterAnnotation(ValidateJsonSchema.class)).thenReturn(true);
 
-        assertTrue(resolver.supportsParameter(parameter));
-    }
+                assertTrue(resolver.supportsParameter(parameter));
+        }
 
-    @Test
-    public void supportsParamFalseTest() {
-        ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver
-                .newInstance(ValidateJsonSchemaConfig.builder().build());
+        @Test
+        public void supportsParamFalseTest() {
+                ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver
+                                .newInstance(ValidateJsonSchemaConfig.builder().build());
 
-        MethodParameter parameter = mock(MethodParameter.class);
-        when(parameter.hasParameterAnnotation(RequestBody.class)).thenReturn(false);
+                MethodParameter parameter = mock(MethodParameter.class);
+                when(parameter.hasParameterAnnotation(RequestBody.class)).thenReturn(false);
 
-        assertFalse(resolver.supportsParameter(parameter));
-    }
+                assertFalse(resolver.supportsParameter(parameter));
+        }
 
-    @Test
-    public void validJsonTest() throws Exception {
+        @Test
+        public void validJsonTest() throws Exception {
 
-        ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver
-                .newInstance(ValidateJsonSchemaConfig.builder().build());
+                ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver
+                                .newInstance(ValidateJsonSchemaConfig.builder().build());
 
-        ExampleValue example = (ExampleValue) resolveArgument(resolver, ExampleValue.class,
-                "{\"value\":\"123\"}", JsonSchemaVersion.V7, "simpleschemaV7.json");
+                ExampleValue example = (ExampleValue) resolveArgument(resolver, ExampleValue.class,
+                                "{\"value\":\"123\"}", JsonSchemaVersion.V7, "simpleschemaV7.json");
 
-        assertEquals("123", example.getValue());
+                assertEquals("123", example.getValue());
 
-        // Now cached
-        example = (ExampleValue) resolveArgument(resolver, ExampleValue.class,
-                "{\"value\":\"123\"}", JsonSchemaVersion.V7, "simpleschemaV7.json");
+                // Now cached
+                example = (ExampleValue) resolveArgument(resolver, ExampleValue.class,
+                                "{\"value\":\"123\"}", JsonSchemaVersion.V7, "simpleschemaV7.json");
 
-        assertEquals("123", example.getValue());
-    }
+                assertEquals("123", example.getValue());
+        }
 
-    @Test
-    public void failedLoadSchemaTest() throws Exception {
-        ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver
-                .newInstance(ValidateJsonSchemaConfig.builder().lookup(new JsonSchemaLookup() {
+        @Test
+        public void failedLoadSchemaTest() throws Exception {
+                ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver
+                                .newInstance(ValidateJsonSchemaConfig.builder()
+                                                .lookup(new JsonSchemaLookup() {
 
-                    @Override
-                    public JsonSchema getSchema(VersionFlag version, String path) {
-                        // Intentionally returning null
-                        return null;
-                    }
-                }).build());
+                                                        @Override
+                                                        public JsonSchema getSchema(
+                                                                        VersionFlag version,
+                                                                        String path) {
+                                                                // Intentionally returning null
+                                                                return null;
+                                                        }
+                                                }).build());
 
-        LoadJsonSchemaException thrown = assertThrows(LoadJsonSchemaException.class,
-                () -> resolveArgument(resolver, ExampleValue.class, "{}", JsonSchemaVersion.V7,
-                        "simpleschemaV7.json"),
-                "Expected exception if JSON Schema cannot be loaded.");
+                LoadJsonSchemaException thrown = assertThrows(LoadJsonSchemaException.class,
+                                () -> resolveArgument(resolver, ExampleValue.class, "{}",
+                                                JsonSchemaVersion.V7, "simpleschemaV7.json"),
+                                "Expected exception if JSON Schema cannot be loaded.");
 
-        assertEquals("Failed to load JSON Schema", thrown.getMessage());
-    }
+                assertEquals("Failed to load JSON Schema", thrown.getMessage());
+        }
 
 
-    @Test
-    public void invalidJsonTest() throws Exception {
+        @Test
+        public void invalidJsonTest() throws Exception {
 
-        ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver
-                .newInstance(ValidateJsonSchemaConfig.builder().build());
+                ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver
+                                .newInstance(ValidateJsonSchemaConfig.builder().build());
 
-        ValidateJsonSchemaException thrown = assertThrows(ValidateJsonSchemaException.class,
-                () -> resolveArgument(resolver, ExampleValue.class, "{}", JsonSchemaVersion.V7,
-                        "simpleschemaV7.json"),
-                "Invalid JSON expected ValidateJsonSchemaException exception");
+                ValidateJsonSchemaException thrown = assertThrows(ValidateJsonSchemaException.class,
+                                () -> resolveArgument(resolver, ExampleValue.class, "{}",
+                                                JsonSchemaVersion.V7, "simpleschemaV7.json"),
+                                "Invalid JSON expected ValidateJsonSchemaException exception");
 
-        assertEquals("JSON did not validate against JSON Schema", thrown.getMessage());
+                assertEquals("JSON did not validate against JSON Schema", thrown.getMessage());
 
-        assertEquals(1, thrown.getValidationResult().size());
+                assertEquals(1, thrown.getValidationResult().size());
 
-        ValidationMessage validationMessage = thrown.getValidationResult().iterator().next();
-        assertEquals("$: required property 'value' not found", validationMessage.getMessage());
-    }
+                ValidationMessage validationMessage =
+                                thrown.getValidationResult().iterator().next();
+                assertEquals("$: required property 'value' not found",
+                                validationMessage.getMessage());
+        }
 
-    private Object resolveArgument(ValidateJsonSchemaArgumentResolver resolver,
-            @SuppressWarnings("rawtypes") Class parameterType, String json,
-            JsonSchemaVersion schemaVersion, String schemaPath) throws Exception {
+        private Object resolveArgument(ValidateJsonSchemaArgumentResolver resolver,
+                        @SuppressWarnings("rawtypes") Class parameterType, String json,
+                        JsonSchemaVersion schemaVersion, String schemaPath) throws Exception {
 
-        // These are not used so they are not mocked
-        ModelAndViewContainer mavContainer = null;
-        WebDataBinderFactory binderFactory = null;
+                // These are not used so they are not mocked
+                ModelAndViewContainer mavContainer = null;
+                WebDataBinderFactory binderFactory = null;
 
-        // Mock everything so this can be tested outside of the typical Spring Boot
-        // implementation
+                // Mock everything so this can be tested outside of the typical Spring Boot
+                // implementation
 
-        ValidateJsonSchema validateJsonSchema = mock(ValidateJsonSchema.class);
-        when(validateJsonSchema.version()).thenReturn(schemaVersion);
-        when(validateJsonSchema.schemaPath()).thenReturn(schemaPath);
+                ValidateJsonSchema validateJsonSchema = mock(ValidateJsonSchema.class);
+                when(validateJsonSchema.version()).thenReturn(schemaVersion);
+                when(validateJsonSchema.schemaPath()).thenReturn(schemaPath);
 
-        MethodParameter parameter = mock(MethodParameter.class);
-        when(parameter.getParameterAnnotation(ValidateJsonSchema.class))
-                .thenReturn(validateJsonSchema);
-        doReturn(parameterType).when(parameter).getParameterType();
+                MethodParameter parameter = mock(MethodParameter.class);
+                when(parameter.getParameterAnnotation(ValidateJsonSchema.class))
+                                .thenReturn(validateJsonSchema);
+                doReturn(parameterType).when(parameter).getParameterType();
 
-        HttpServletRequest httpServletRequest = mock(HttpServletRequest.class);
-        when(httpServletRequest.getInputStream()).thenReturn(new MockServletInputStream(json));
+                try (MockServletInputStream mockServletInputStream =
+                                new MockServletInputStream(json)) {
+                        HttpServletRequest httpServletRequest = mock(HttpServletRequest.class);
+                        when(httpServletRequest.getInputStream())
+                                        .thenReturn(mockServletInputStream);
 
-        NativeWebRequest webRequest = mock(NativeWebRequest.class);
-        when(webRequest.getNativeRequest(HttpServletRequest.class)).thenReturn(httpServletRequest);
+                        NativeWebRequest webRequest = mock(NativeWebRequest.class);
+                        when(webRequest.getNativeRequest(HttpServletRequest.class))
+                                        .thenReturn(httpServletRequest);
 
-        // Resolve the argument or throw an exception if input was not validated
-        return resolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
-    }
+                        // Resolve the argument or throw an exception if input was not validated
+                        return resolver.resolveArgument(parameter, mavContainer, webRequest,
+                                        binderFactory);
+                }
+        }
 }
