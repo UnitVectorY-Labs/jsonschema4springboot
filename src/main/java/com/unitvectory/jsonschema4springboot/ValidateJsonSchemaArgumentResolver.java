@@ -153,8 +153,8 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
         JsonMetaSchema metaSchema =
                 JsonSchemaFactory.checkVersion(jsonSchemaVersion.getSpecVersion()).getInstance();
         builder.jsonMapper(this.objectMapper);
-        builder.defaultMetaSchemaURI(metaSchema.getUri());
-        builder.addMetaSchema(metaSchema);
+        builder.metaSchema(metaSchema);
+        builder.defaultMetaSchemaIri(metaSchema.getIri());
         config.customizeJsonSchemaFactoryBuilder(builder, jsonSchemaVersion);
         return builder.build();
     }
