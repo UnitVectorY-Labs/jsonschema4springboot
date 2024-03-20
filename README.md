@@ -6,9 +6,9 @@ Add JSON Schema Validation to Spring Boot 3 with Annotations
 
 ## Purpose
 
-This library provides an annotation for deserializing JSON in Spring Boot 3 to include JSON Schema validation as part of the process using the [networknt/json-schema-validator](https://github.com/networknt/json-schema-validator) library. This replaces the `@RequestBody` annotation with the `@ValidateJsonSchema` annotation that allows the JSON Schema to be specified for a specific payload.
+This library provides an annotation for deserializing JSON in Spring Boot 3 to include JSON Schema validation as part of the process using the [networknt/json-schema-validator](https://github.com/networknt/json-schema-validator) library. This replaces the `@RequestBody` annotation with the `@ValidateJsonSchema` annotation that allows the JSON Schema to be specified for a specific payload when parsing it into an object.
 
-This is an opinionated design first approach to implementing the APIs where the input validation logic lives in the JSON Schema instead of in the Java code. While the JSON Schema and POJO are not validated against one another, the flexible input validation
+This is an opinionated design first approach to implementing the APIs where the input validation logic lives in the JSON Schema instead of in the Java code. While the JSON Schema and POJO are not validated against one another, the flexible input validation provided by a JSON Schema is intended to reduce the complexity of the API implementation.
 
 ## Getting Started
 
@@ -18,42 +18,29 @@ It is still under active development.
 
 ## Usage
 
-For a Spring Boot 3 project to utilize the annotation the `ValidateJsonSchemaArgumentResolver` argument resolver must be registered. This can be accomplished with the following code.
+For a Spring Boot 3 project to utilize the `@ValidateJsonSchema` annotation the `ValidateJsonSchemaArgumentResolver` class must be registered with Spring Boot using the `addArgumentResolvers` method. This can be accomplished with the following code.
 
 ```java
 package example;
 
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.unitvectory.jsonschema4springboot.JsonSchemaLookupDefault;
 import com.unitvectory.jsonschema4springboot.ValidateJsonSchemaArgumentResolver;
-import com.unitvectory.jsonschema4springboot.ValidateJsonSchemaConfig;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 
 @Configuration
 public class JsonValidationConfiguration implements WebMvcConfigurer {
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    private ResourcePatternResolver resourcePatternResolver;
-
     @Override
     public void addArgumentResolvers(
             @SuppressWarnings("null") List<HandlerMethodArgumentResolver> resolvers) {
-        resolvers.add(ValidateJsonSchemaArgumentResolver.newInstance(ValidateJsonSchemaConfig
-                .builder().objectMapper(objectMapper)
-                .lookup(JsonSchemaLookupDefault.newInstance(resourcePatternResolver)).build()));
+        resolvers.add(ValidateJsonSchemaArgumentResolver.newInstance());
     }
 }
 ```
 
-Each request can have a schema defined, in this example the schema is located at `src/main/resources/jsonschema.json` but multiple. While this example shows a draft-07 JSON Schema example, all versions of JSON Schema supported by [networknt/json-schema-validator](https://github.com/networknt/json-schema-validator) can be used.
+Each request can have a schema defined, in this example the schema is located at `src/main/resources/jsonschema.json`. While this example shows a draft-07 JSON Schema example, all versions of JSON Schema supported by [networknt/json-schema-validator](https://github.com/networknt/json-schema-validator) can be used.
 
 ```json
 {

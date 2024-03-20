@@ -14,24 +14,40 @@
 package com.unitvectory.jsonschema4springboot;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Builder;
-import lombok.Value;
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SchemaValidatorsConfig;
 
 /**
- * The validate JSON Schema configuration.
+ * The configuration for validating the JSON Schema.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-@Value
-@Builder
-public class ValidateJsonSchemaConfig {
+public interface ValidateJsonSchemaConfig {
 
-    @Builder.Default
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    /**
+     * Get the object mapper
+     * 
+     * @return the object mapper
+     */
+    default ObjectMapper getObjectMapper() {
+        return new ObjectMapper();
+    }
 
-    @Builder.Default
-    private final JsonSchemaCache cache = JsonSchemaCacheDefault.newInstance();
+    /**
+     * Get the SchemaValidatorsConfig
+     * 
+     * @return
+     */
+    default SchemaValidatorsConfig getSchemaValidatorsConfig() {
+        return new SchemaValidatorsConfig();
+    }
 
-    @Builder.Default
-    private final JsonSchemaLookup lookup = JsonSchemaLookupDefault.newInstance();
+    /**
+     * Customizes the JsonSchemaFactory builder
+     * 
+     * @param builder the builder
+     * @param version the JSON Schema version
+     */
+    default void customizeJsonSchemaFactoryBuilder(JsonSchemaFactory.Builder builder,
+            JsonSchemaVersion version) {}
 }

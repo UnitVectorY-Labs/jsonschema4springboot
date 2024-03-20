@@ -26,9 +26,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.ModelAndViewContainer;
-import com.networknt.schema.JsonSchema;
 import com.networknt.schema.ValidationMessage;
-import com.networknt.schema.SpecVersion.VersionFlag;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
@@ -49,8 +47,8 @@ public class ValidateJsonSchemaArgumentResolverTest {
 
         @Test
         public void supportsParamTrueTest() {
-                ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver
-                                .newInstance(ValidateJsonSchemaConfig.builder().build());
+                ValidateJsonSchemaArgumentResolver resolver =
+                                ValidateJsonSchemaArgumentResolver.newInstance();
 
                 MethodParameter parameter = mock(MethodParameter.class);
                 when(parameter.hasParameterAnnotation(ValidateJsonSchema.class)).thenReturn(true);
@@ -60,8 +58,8 @@ public class ValidateJsonSchemaArgumentResolverTest {
 
         @Test
         public void supportsParamFalseTest() {
-                ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver
-                                .newInstance(ValidateJsonSchemaConfig.builder().build());
+                ValidateJsonSchemaArgumentResolver resolver =
+                                ValidateJsonSchemaArgumentResolver.newInstance();
 
                 MethodParameter parameter = mock(MethodParameter.class);
                 when(parameter.hasParameterAnnotation(RequestBody.class)).thenReturn(false);
@@ -72,54 +70,33 @@ public class ValidateJsonSchemaArgumentResolverTest {
         @Test
         public void validJsonTest() throws Exception {
 
-                ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver
-                                .newInstance(ValidateJsonSchemaConfig.builder().build());
+                ValidateJsonSchemaArgumentResolver resolver =
+                                ValidateJsonSchemaArgumentResolver.newInstance();
 
                 ExampleValue example = (ExampleValue) resolveArgument(resolver, ExampleValue.class,
-                                "{\"value\":\"123\"}", JsonSchemaVersion.V7, "simpleschemaV7.json");
+                                "{\"value\":\"123\"}", JsonSchemaVersion.V7,
+                                "classpath:schema/simpleschemaV7.json");
 
                 assertEquals("123", example.getValue());
 
                 // Now cached
                 example = (ExampleValue) resolveArgument(resolver, ExampleValue.class,
-                                "{\"value\":\"123\"}", JsonSchemaVersion.V7, "simpleschemaV7.json");
+                                "{\"value\":\"123\"}", JsonSchemaVersion.V7,
+                                "classpath:schema/simpleschemaV7.json");
 
                 assertEquals("123", example.getValue());
         }
 
         @Test
-        public void failedLoadSchemaTest() throws Exception {
-                ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver
-                                .newInstance(ValidateJsonSchemaConfig.builder()
-                                                .lookup(new JsonSchemaLookup() {
-
-                                                        @Override
-                                                        public JsonSchema getSchema(
-                                                                        VersionFlag version,
-                                                                        String path) {
-                                                                // Intentionally returning null
-                                                                return null;
-                                                        }
-                                                }).build());
-
-                LoadJsonSchemaException thrown = assertThrows(LoadJsonSchemaException.class,
-                                () -> resolveArgument(resolver, ExampleValue.class, "{}",
-                                                JsonSchemaVersion.V7, "simpleschemaV7.json"),
-                                "Expected exception if JSON Schema cannot be loaded.");
-
-                assertEquals("Failed to load JSON Schema", thrown.getMessage());
-        }
-
-
-        @Test
         public void invalidJsonTest() throws Exception {
 
-                ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver
-                                .newInstance(ValidateJsonSchemaConfig.builder().build());
+                ValidateJsonSchemaArgumentResolver resolver =
+                                ValidateJsonSchemaArgumentResolver.newInstance();
 
                 ValidateJsonSchemaException thrown = assertThrows(ValidateJsonSchemaException.class,
                                 () -> resolveArgument(resolver, ExampleValue.class, "{}",
-                                                JsonSchemaVersion.V7, "simpleschemaV7.json"),
+                                                JsonSchemaVersion.V7,
+                                                "classpath:schema/simpleschemaV7.json"),
                                 "Invalid JSON expected ValidateJsonSchemaException exception");
 
                 assertEquals("JSON did not validate against JSON Schema", thrown.getMessage());

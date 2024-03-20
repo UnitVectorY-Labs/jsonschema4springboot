@@ -15,6 +15,7 @@ package com.unitvectory.jsonschema4springboot;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.core.MethodParameter;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -23,8 +24,13 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.networknt.schema.JsonMetaSchema;
 import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SchemaLocation;
+import com.networknt.schema.SchemaValidatorsConfig;
 import com.networknt.schema.ValidationMessage;
+import com.networknt.schema.SpecVersion.VersionFlag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 
@@ -34,6 +40,21 @@ import lombok.NonNull;
  * @author Jared Hatfield (UnitVectorY Labs)
  */
 public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgumentResolver {
+
+    /**
+     * The factories
+     */
+    private final ConcurrentHashMap<JsonSchemaVersion, JsonSchemaFactory> factories;
+
+    /**
+     * The schema validatiors config used for all schemas
+     */
+    private final SchemaValidatorsConfig schemaValidatorsConfig;
+
+    /**
+     * The Jackson ObjectMapper
+     */
+    private final ObjectMapper objectMapper;
 
     /**
      * The configuration
@@ -46,7 +67,19 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
      * @param config the config
      */
     private ValidateJsonSchemaArgumentResolver(ValidateJsonSchemaConfig config) {
+        this.factories = new ConcurrentHashMap<>();
+        this.objectMapper = config.getObjectMapper();
+        this.schemaValidatorsConfig = config.getSchemaValidatorsConfig();
         this.config = config;
+    }
+
+    /**
+     * Creates a new instance of the ValidateJsonSchemaArgumentResolver class
+     * 
+     * @return the ValidateJsonSchemaArgumentResolver
+     */
+    public static ValidateJsonSchemaArgumentResolver newInstance() {
+        return new ValidateJsonSchemaArgumentResolver(new ValidateJsonSchemaConfigDefault());
     }
 
     /**
@@ -73,28 +106,25 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
             ModelAndViewContainer mavContainer, NativeWebRequest webRequest,
             WebDataBinderFactory binderFactory) throws Exception {
 
-        ObjectMapper objectMapper = this.config.getObjectMapper();
-        JsonSchemaCache cache = this.config.getCache();
-        JsonSchemaLookup lookup = this.config.getLookup();
-
         // Get the annotation
         ValidateJsonSchema validateJsonSchema =
                 parameter.getParameterAnnotation(ValidateJsonSchema.class);
         String schemaPath = validateJsonSchema.schemaPath();
         JsonSchemaVersion jsonSchemaVersion = validateJsonSchema.version();
 
-        // First try the cache
-        JsonSchema schema = cache.getSchema(schemaPath);
-        if (schema == null) {
-            schema = lookup.getSchema(jsonSchemaVersion.getSpecVersion(), schemaPath);
+        // Get the factory for the version, only one factory per version as the caching is utilized
+        // and in theory there could be multiple versions used concurrently
+        JsonSchemaFactory factory = this.factories.computeIfAbsent(jsonSchemaVersion,
+                v -> createFactory(jsonSchemaVersion));
 
-            // Failed to get the
-            if (schema == null) {
-                throw new LoadJsonSchemaException("Failed to load JSON Schema");
-            }
-
-            // Cache the value
-            cache.cacheSchema(schemaPath, schema);
+        // Load the schema
+        JsonSchema jsonSchema;
+        try {
+            jsonSchema =
+                    factory.getSchema(SchemaLocation.of(schemaPath), this.schemaValidatorsConfig);
+        } catch (Exception e) {
+            throw new LoadJsonSchemaException("JSON Schema failed to load from path: " + schemaPath,
+                    e);
         }
 
         // Get the JSON as a String
@@ -107,7 +137,7 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
         JsonNode json = objectMapper.readTree(jsonString);
 
         // Validate the Json
-        Set<ValidationMessage> validationResult = schema.validate(json);
+        Set<ValidationMessage> validationResult = jsonSchema.validate(json);
         if (validationResult.isEmpty()) {
             // Convert the JSON into the object
             return objectMapper.treeToValue(json, parameter.getParameterType());
@@ -115,5 +145,17 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
             // Throw the validation exception
             throw new ValidateJsonSchemaException(validationResult);
         }
+    }
+
+    private final JsonSchemaFactory createFactory(@NonNull JsonSchemaVersion jsonSchemaVersion) {
+        JsonSchemaFactory.getInstance(VersionFlag.V7);
+        JsonSchemaFactory.Builder builder = JsonSchemaFactory.builder();
+        JsonMetaSchema metaSchema =
+                JsonSchemaFactory.checkVersion(jsonSchemaVersion.getSpecVersion()).getInstance();
+        builder.jsonMapper(this.objectMapper);
+        builder.defaultMetaSchemaURI(metaSchema.getUri());
+        builder.addMetaSchema(metaSchema);
+        config.customizeJsonSchemaFactoryBuilder(builder, jsonSchemaVersion);
+        return builder.build();
     }
 }

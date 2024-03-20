@@ -13,28 +13,11 @@
  */
 package com.unitvectory.jsonschema4springboot;
 
-import com.networknt.schema.JsonSchema;
-
 /**
- * JSON Schema Cache interface.
+ * The default configuration for validating the JSON Schema.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-public interface JsonSchemaCache {
+class ValidateJsonSchemaConfigDefault implements ValidateJsonSchemaConfig {
 
-    /**
-     * Get a cached schema.
-     * 
-     * @param path the path
-     * @return the JsonSchema; null if not found
-     */
-    JsonSchema getSchema(String path);
-
-    /**
-     * Cache a JsonSchema
-     * 
-     * @param path the path
-     * @param schema the JsonSchema
-     */
-    void cacheSchema(String path, JsonSchema schema);
 }
