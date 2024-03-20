@@ -109,8 +109,17 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
         // Get the annotation
         ValidateJsonSchema validateJsonSchema =
                 parameter.getParameterAnnotation(ValidateJsonSchema.class);
+
         String schemaPath = validateJsonSchema.schemaPath();
+        if (schemaPath == null) {
+            throw new LoadJsonSchemaException(
+                    "schemaPath is null in @ValidateJsonSchema annotation");
+        }
+
         JsonSchemaVersion jsonSchemaVersion = validateJsonSchema.version();
+        if (jsonSchemaVersion == null) {
+            throw new LoadJsonSchemaException("version is null in @ValidateJsonSchema annotation");
+        }
 
         // Get the factory for the version, only one factory per version as the caching is utilized
         // and in theory there could be multiple versions used concurrently
@@ -147,7 +156,7 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
         }
     }
 
-    private final JsonSchemaFactory createFactory(@NonNull JsonSchemaVersion jsonSchemaVersion) {
+    private final JsonSchemaFactory createFactory(JsonSchemaVersion jsonSchemaVersion) {
         JsonSchemaFactory.getInstance(VersionFlag.V7);
         JsonSchemaFactory.Builder builder = JsonSchemaFactory.builder();
         JsonMetaSchema metaSchema =

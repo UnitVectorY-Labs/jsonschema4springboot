@@ -70,8 +70,8 @@ public class ValidateJsonSchemaArgumentResolverTest {
         @Test
         public void validJsonTest() throws Exception {
 
-                ValidateJsonSchemaArgumentResolver resolver =
-                                ValidateJsonSchemaArgumentResolver.newInstance();
+                ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver
+                                .newInstance(new ValidateJsonSchemaConfigDefault());
 
                 ExampleValue example = (ExampleValue) resolveArgument(resolver, ExampleValue.class,
                                 "{\"value\":\"123\"}", JsonSchemaVersion.V7,
@@ -97,7 +97,7 @@ public class ValidateJsonSchemaArgumentResolverTest {
                                 () -> resolveArgument(resolver, ExampleValue.class, "{}",
                                                 JsonSchemaVersion.V7,
                                                 "classpath:schema/simpleschemaV7.json"),
-                                "Invalid JSON expected ValidateJsonSchemaException exception");
+                                "Expected ValidateJsonSchemaException exception");
 
                 assertEquals("JSON did not validate against JSON Schema", thrown.getMessage());
 
@@ -107,6 +107,49 @@ public class ValidateJsonSchemaArgumentResolverTest {
                                 thrown.getValidationResult().iterator().next();
                 assertEquals("$: required property 'value' not found",
                                 validationMessage.getMessage());
+        }
+
+        @Test
+        public void jsonSchemaVersionNullTest() {
+                ValidateJsonSchemaArgumentResolver resolver =
+                                ValidateJsonSchemaArgumentResolver.newInstance();
+
+                LoadJsonSchemaException thrown = assertThrows(LoadJsonSchemaException.class,
+                                () -> resolveArgument(resolver, ExampleValue.class, "{}", null,
+                                                "classpath:schema/simpleschemaV7.json"),
+                                "Expected LoadJsonSchemaException exception");
+
+                assertEquals("version is null in @ValidateJsonSchema annotation",
+                                thrown.getMessage());
+        }
+
+        @Test
+        public void jsonSchemaPathNullTest() {
+                ValidateJsonSchemaArgumentResolver resolver =
+                                ValidateJsonSchemaArgumentResolver.newInstance();
+
+                LoadJsonSchemaException thrown = assertThrows(LoadJsonSchemaException.class,
+                                () -> resolveArgument(resolver, ExampleValue.class, "{}",
+                                                JsonSchemaVersion.V7, null),
+                                "Expected LoadJsonSchemaException exception");
+
+                assertEquals("schemaPath is null in @ValidateJsonSchema annotation",
+                                thrown.getMessage());
+        }
+
+        @Test
+        public void missingSchemaTest() {
+                ValidateJsonSchemaArgumentResolver resolver =
+                                ValidateJsonSchemaArgumentResolver.newInstance();
+
+                LoadJsonSchemaException thrown = assertThrows(LoadJsonSchemaException.class,
+                                () -> resolveArgument(resolver, ExampleValue.class, "{}",
+                                                JsonSchemaVersion.V7, "classpath:doesnotexist"),
+                                "Expected LoadJsonSchemaException exception");
+
+                assertEquals("JSON Schema failed to load from path: classpath:doesnotexist",
+                                thrown.getMessage());
+
         }
 
         private Object resolveArgument(ValidateJsonSchemaArgumentResolver resolver,
