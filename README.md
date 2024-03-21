@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/badge/License-EPL%202.0-blue.svg)](https://www.eclipse.org/legal/epl-v20.html) [![codecov](https://codecov.io/gh/UnitVectorY-Labs/jsonschema4springboot/graph/badge.svg?token=UJ2HAD30E7)](https://codecov.io/gh/UnitVectorY-Labs/jsonschema4springboot)
+[![License](https://img.shields.io/badge/License-EPL%202.0-blue.svg)](https://www.eclipse.org/legal/epl-v20.html) [![Maven Central](https://img.shields.io/maven-central/v/com.unitvectory/jsonschema4springboot)](https://central.sonatype.com/artifact/com.unitvectory/jsonschema4springboot) [![javadoc](https://javadoc.io/badge2/com.unitvectory/jsonschema4springboot/javadoc.svg)](https://javadoc.io/doc/com.unitvectory/jsonschema4springboot) [![codecov](https://codecov.io/gh/UnitVectorY-Labs/jsonschema4springboot/graph/badge.svg?token=UJ2HAD30E7)](https://codecov.io/gh/UnitVectorY-Labs/jsonschema4springboot)
 
 # jsonschema4springboot
 
@@ -12,9 +12,15 @@ This is an opinionated design first approach to implementing the APIs where the 
 
 ## Getting Started
 
-This library requires Java 17 and Spring Boot 3.
+This library requires Java 17 and Spring Boot 3 and is available in the Maven Central Repository:
 
-It is still under active development.
+```xml
+<dependency>
+    <groupId>com.unitvectory</groupId>
+    <artifactId>jsonschema4springboot</artifactId>
+    <version>0.0.1</version>
+</dependency>
+```
 
 ## Usage
 
