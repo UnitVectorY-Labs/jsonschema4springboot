@@ -65,7 +65,7 @@ package example;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.unitvectory.jsonschema4springboot.JsonSchemaVersion;
+import com.unitvectory.jsonschema4springboot.ValidateJsonSchemaVersion;
 import com.unitvectory.jsonschema4springboot.ValidateJsonSchema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -76,7 +76,7 @@ public class ExampleController {
 
     @PostMapping(path = "/example", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ExampleResponse example(@ValidateJsonSchema(version = JsonSchemaVersion.V7,
+    public ExampleResponse example(@ValidateJsonSchema(version = ValidateJsonSchemaVersion.V7,
             schemaPath = "classpath:jsonschema.json") ExampleRequest request) {
         // Trivial API example
         return new ExampleResponse(request.getValue().length());
@@ -98,4 +98,33 @@ public class ExampleController {
 }
 ```
 
-In the case the JSON Schema does not validate a `ValidateJsonSchemaException` will be thrown which can be mapped to an API response.
+In the case the JSON Schema does not validate a `ValidateJsonSchemaException` will be thrown which can be mapped to an API response. The `ValidateJsonSchemaFailedResponse` class is provided and provides a simple error object listing the JSON Schema validation errors.
+
+```json
+{
+  "message": "JSON validation failed",
+  "details": ["$: required property 'value' not found"]
+}
+```
+
+To return this error an exception mapper must be provided. However, this is flexible and a different error structure can be used specific to an implementation.
+
+```java
+package example;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import com.unitvectory.jsonschema4springboot.ValidateJsonSchemaException;
+import com.unitvectory.jsonschema4springboot.ValidateJsonSchemaFailedResponse;
+
+@ControllerAdvice
+public class JsonValidationExceptionHandler {
+
+    @ExceptionHandler(ValidateJsonSchemaException.class)
+    public ResponseEntity<ValidateJsonSchemaFailedResponse> onValidateJsonSchemaException(
+            ValidateJsonSchemaException ex) {
+        return ResponseEntity.badRequest().body(new ValidateJsonSchemaFailedResponse(ex));
+    }
+}
+```

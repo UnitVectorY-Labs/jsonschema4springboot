@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonMetaSchema;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.JsonSchemaVersion;
 import com.networknt.schema.SchemaLocation;
 import com.networknt.schema.SchemaValidatorsConfig;
 import com.networknt.schema.ValidationMessage;
@@ -44,7 +45,7 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
     /**
      * The factories
      */
-    private final ConcurrentHashMap<JsonSchemaVersion, JsonSchemaFactory> factories;
+    private final ConcurrentHashMap<ValidateJsonSchemaVersion, JsonSchemaFactory> factories;
 
     /**
      * The schema validatiors config used for all schemas
@@ -116,7 +117,7 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
                     "schemaPath is null in @ValidateJsonSchema annotation");
         }
 
-        JsonSchemaVersion jsonSchemaVersion = validateJsonSchema.version();
+        ValidateJsonSchemaVersion jsonSchemaVersion = validateJsonSchema.version();
         if (jsonSchemaVersion == null) {
             throw new LoadJsonSchemaException("version is null in @ValidateJsonSchema annotation");
         }
@@ -156,15 +157,18 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
         }
     }
 
-    private final JsonSchemaFactory createFactory(JsonSchemaVersion jsonSchemaVersion) {
+    private final JsonSchemaFactory createFactory(
+            ValidateJsonSchemaVersion validateJsonSchemaVersion) {
         JsonSchemaFactory.getInstance(VersionFlag.V7);
         JsonSchemaFactory.Builder builder = JsonSchemaFactory.builder();
-        JsonMetaSchema metaSchema =
-                JsonSchemaFactory.checkVersion(jsonSchemaVersion.getSpecVersion()).getInstance();
+
+        VersionFlag versionFlag = validateJsonSchemaVersion.getSpecVersion();
+        JsonSchemaVersion jsonSchemaVersion = JsonSchemaFactory.checkVersion(versionFlag);
+        JsonMetaSchema metaSchema = jsonSchemaVersion.getInstance();
         builder.jsonMapper(this.objectMapper);
         builder.metaSchema(metaSchema);
         builder.defaultMetaSchemaIri(metaSchema.getIri());
-        config.customizeJsonSchemaFactoryBuilder(builder, jsonSchemaVersion);
+        config.customizeJsonSchemaFactoryBuilder(builder, validateJsonSchemaVersion);
         return builder.build();
     }
 }

@@ -20,12 +20,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * The JSON Schema version
+ * The validate JSON Schema version
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
 @AllArgsConstructor
-public enum JsonSchemaVersion {
+public enum ValidateJsonSchemaVersion {
 
     /**
      * Version 4.

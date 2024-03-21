@@ -39,5 +39,5 @@ public @interface ValidateJsonSchema {
      * 
      * @return the JSON Schema version
      */
-    JsonSchemaVersion version();
+    ValidateJsonSchemaVersion version();
 }

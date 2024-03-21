@@ -36,7 +36,7 @@ public interface ValidateJsonSchemaConfig {
     /**
      * Get the SchemaValidatorsConfig
      * 
-     * @return
+     * @return the SchemaValidatorsConfig
      */
     default SchemaValidatorsConfig getSchemaValidatorsConfig() {
         return new SchemaValidatorsConfig();
@@ -49,5 +49,5 @@ public interface ValidateJsonSchemaConfig {
      * @param version the JSON Schema version
      */
     default void customizeJsonSchemaFactoryBuilder(JsonSchemaFactory.Builder builder,
-            JsonSchemaVersion version) {}
+            ValidateJsonSchemaVersion version) {}
 }

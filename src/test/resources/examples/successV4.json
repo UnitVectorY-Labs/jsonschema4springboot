@@ -1,0 +1,9 @@
+{
+  "input": {
+    "value": "123"
+  },
+  "context": "simpleschemaV4.json",
+  "output": {
+    "value": "123"
+  }
+}
