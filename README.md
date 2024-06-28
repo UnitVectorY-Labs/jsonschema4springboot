@@ -18,7 +18,7 @@ This library requires Java 17 and Spring Boot 3 and is available in the Maven Ce
 <dependency>
     <groupId>com.unitvectory</groupId>
     <artifactId>jsonschema4springboot</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 </dependency>
 ```
 
