@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-@Target({ElementType.PARAMETER})
+@Target({ ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidateJsonSchema {
 

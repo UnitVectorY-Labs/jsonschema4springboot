@@ -108,8 +108,7 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
             WebDataBinderFactory binderFactory) throws Exception {
 
         // Get the annotation
-        ValidateJsonSchema validateJsonSchema =
-                parameter.getParameterAnnotation(ValidateJsonSchema.class);
+        ValidateJsonSchema validateJsonSchema = parameter.getParameterAnnotation(ValidateJsonSchema.class);
 
         String schemaPath = validateJsonSchema.schemaPath();
         if (schemaPath == null) {
@@ -122,7 +121,8 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
             throw new LoadJsonSchemaException("version is null in @ValidateJsonSchema annotation");
         }
 
-        // Get the factory for the version, only one factory per version as the caching is utilized
+        // Get the factory for the version, only one factory per version as the caching
+        // is utilized
         // and in theory there could be multiple versions used concurrently
         JsonSchemaFactory factory = this.factories.computeIfAbsent(jsonSchemaVersion,
                 v -> createFactory(jsonSchemaVersion));
@@ -130,16 +130,14 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
         // Load the schema
         JsonSchema jsonSchema;
         try {
-            jsonSchema =
-                    factory.getSchema(SchemaLocation.of(schemaPath), this.schemaValidatorsConfig);
+            jsonSchema = factory.getSchema(SchemaLocation.of(schemaPath), this.schemaValidatorsConfig);
         } catch (Exception e) {
             throw new LoadJsonSchemaException("JSON Schema failed to load from path: " + schemaPath,
                     e);
         }
 
         // Get the JSON as a String
-        HttpServletRequest httpServletRequest =
-                webRequest.getNativeRequest(HttpServletRequest.class);
+        HttpServletRequest httpServletRequest = webRequest.getNativeRequest(HttpServletRequest.class);
         String jsonString = StreamUtils.copyToString(httpServletRequest.getInputStream(),
                 StandardCharsets.UTF_8);
 

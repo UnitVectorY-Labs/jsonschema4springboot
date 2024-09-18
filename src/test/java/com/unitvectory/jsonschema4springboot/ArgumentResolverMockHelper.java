@@ -29,7 +29,6 @@ import jakarta.servlet.http.HttpServletRequest;
  */
 public class ArgumentResolverMockHelper {
 
-
     static Object resolveArgument(ValidateJsonSchemaArgumentResolver resolver,
             @SuppressWarnings("rawtypes") Class parameterType, String json,
             ValidateJsonSchemaVersion schemaVersion, String schemaPath) throws Exception {

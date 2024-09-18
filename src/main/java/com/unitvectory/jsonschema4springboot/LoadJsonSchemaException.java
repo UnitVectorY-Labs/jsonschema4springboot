@@ -33,7 +33,7 @@ public class LoadJsonSchemaException extends RuntimeException {
      * Creates a new instance of the LoadJsonSchemaException class
      * 
      * @param message the exception message
-     * @param cause the cause
+     * @param cause   the cause
      */
     public LoadJsonSchemaException(String message, Throwable cause) {
         super(message, cause);

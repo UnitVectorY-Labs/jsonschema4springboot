@@ -31,127 +31,119 @@ import com.networknt.schema.ValidationMessage;
  */
 public class ValidateJsonSchemaArgumentResolverTest {
 
-        @Test
-        public void missingConfigTest() {
-                NullPointerException thrown = assertThrows(NullPointerException.class,
-                                () -> ValidateJsonSchemaArgumentResolver.newInstance(null),
-                                "ValidateJsonSchemaArgumentResolver config cannot be null");
+    @Test
+    public void missingConfigTest() {
+        NullPointerException thrown = assertThrows(NullPointerException.class,
+                () -> ValidateJsonSchemaArgumentResolver.newInstance(null),
+                "ValidateJsonSchemaArgumentResolver config cannot be null");
 
-                assertEquals("config is marked non-null but is null", thrown.getMessage());
-        }
+        assertEquals("config is marked non-null but is null", thrown.getMessage());
+    }
 
-        @Test
-        public void supportsParamTrueTest() {
-                ValidateJsonSchemaArgumentResolver resolver =
-                                ValidateJsonSchemaArgumentResolver.newInstance();
+    @Test
+    public void supportsParamTrueTest() {
+        ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver.newInstance();
 
-                MethodParameter parameter = mock(MethodParameter.class);
-                when(parameter.hasParameterAnnotation(ValidateJsonSchema.class)).thenReturn(true);
+        MethodParameter parameter = mock(MethodParameter.class);
+        when(parameter.hasParameterAnnotation(ValidateJsonSchema.class)).thenReturn(true);
 
-                assertTrue(resolver.supportsParameter(parameter));
-        }
+        assertTrue(resolver.supportsParameter(parameter));
+    }
 
-        @Test
-        public void supportsParamFalseTest() {
-                ValidateJsonSchemaArgumentResolver resolver =
-                                ValidateJsonSchemaArgumentResolver.newInstance();
+    @Test
+    public void supportsParamFalseTest() {
+        ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver.newInstance();
 
-                MethodParameter parameter = mock(MethodParameter.class);
-                when(parameter.hasParameterAnnotation(RequestBody.class)).thenReturn(false);
+        MethodParameter parameter = mock(MethodParameter.class);
+        when(parameter.hasParameterAnnotation(RequestBody.class)).thenReturn(false);
 
-                assertFalse(resolver.supportsParameter(parameter));
-        }
+        assertFalse(resolver.supportsParameter(parameter));
+    }
 
-        @Test
-        public void validJsonTest() throws Exception {
+    @Test
+    public void validJsonTest() throws Exception {
 
-                ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver
-                                .newInstance(new ValidateJsonSchemaConfigDefault());
+        ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver
+                .newInstance(new ValidateJsonSchemaConfigDefault());
 
-                ExampleValue example =
-                                (ExampleValue) ArgumentResolverMockHelper.resolveArgument(resolver,
-                                                ExampleValue.class, "{\"value\":\"123\"}",
-                                                ValidateJsonSchemaVersion.V7,
-                                                "classpath:schema/simpleschemaV7.json");
+        ExampleValue example = (ExampleValue) ArgumentResolverMockHelper.resolveArgument(resolver,
+                ExampleValue.class, "{\"value\":\"123\"}",
+                ValidateJsonSchemaVersion.V7,
+                "classpath:schema/simpleschemaV7.json");
 
-                assertEquals("123", example.getValue());
+        assertEquals("123", example.getValue());
 
-                // Now cached
-                example = (ExampleValue) ArgumentResolverMockHelper.resolveArgument(resolver,
-                                ExampleValue.class, "{\"value\":\"123\"}",
-                                ValidateJsonSchemaVersion.V7,
-                                "classpath:schema/simpleschemaV7.json");
+        // Now cached
+        example = (ExampleValue) ArgumentResolverMockHelper.resolveArgument(resolver,
+                ExampleValue.class, "{\"value\":\"123\"}",
+                ValidateJsonSchemaVersion.V7,
+                "classpath:schema/simpleschemaV7.json");
 
-                assertEquals("123", example.getValue());
-        }
+        assertEquals("123", example.getValue());
+    }
 
-        @Test
-        public void invalidJsonTest() throws Exception {
+    @Test
+    public void invalidJsonTest() throws Exception {
 
-                ValidateJsonSchemaArgumentResolver resolver =
-                                ValidateJsonSchemaArgumentResolver.newInstance();
+        ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver.newInstance();
 
-                ValidateJsonSchemaException thrown = assertThrows(ValidateJsonSchemaException.class,
-                                () -> ArgumentResolverMockHelper.resolveArgument(resolver,
-                                                ExampleValue.class, "{}",
-                                                ValidateJsonSchemaVersion.V7,
-                                                "classpath:schema/simpleschemaV7.json"),
-                                "Expected ValidateJsonSchemaException exception");
+        ValidateJsonSchemaException thrown = assertThrows(ValidateJsonSchemaException.class,
+                () -> ArgumentResolverMockHelper.resolveArgument(resolver,
+                        ExampleValue.class, "{}",
+                        ValidateJsonSchemaVersion.V7,
+                        "classpath:schema/simpleschemaV7.json"),
+                "Expected ValidateJsonSchemaException exception");
 
-                assertEquals("JSON did not validate against JSON Schema", thrown.getMessage());
+        assertEquals("JSON did not validate against JSON Schema", thrown.getMessage());
 
-                assertEquals(1, thrown.getValidationResult().size());
+        assertEquals(1, thrown.getValidationResult().size());
 
-                ValidationMessage validationMessage =
-                                thrown.getValidationResult().iterator().next();
-                assertEquals("$: required property 'value' not found",
-                                validationMessage.getMessage());
-        }
+        ValidationMessage validationMessage = thrown.getValidationResult().iterator().next();
+        assertEquals("$: required property 'value' not found",
+                validationMessage.getMessage());
+    }
 
-        @Test
-        public void jsonSchemaVersionNullTest() {
-                ValidateJsonSchemaArgumentResolver resolver =
-                                ValidateJsonSchemaArgumentResolver.newInstance();
+    @Test
+    public void jsonSchemaVersionNullTest() {
+        ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver.newInstance();
 
-                LoadJsonSchemaException thrown = assertThrows(LoadJsonSchemaException.class,
-                                () -> ArgumentResolverMockHelper.resolveArgument(resolver,
-                                                ExampleValue.class, "{}", null,
-                                                "classpath:schema/simpleschemaV7.json"),
-                                "Expected LoadJsonSchemaException exception");
+        LoadJsonSchemaException thrown = assertThrows(LoadJsonSchemaException.class,
+                () -> ArgumentResolverMockHelper.resolveArgument(resolver,
+                        ExampleValue.class, "{}", null,
+                        "classpath:schema/simpleschemaV7.json"),
+                "Expected LoadJsonSchemaException exception");
 
-                assertEquals("version is null in @ValidateJsonSchema annotation",
-                                thrown.getMessage());
-        }
+        assertEquals("version is null in @ValidateJsonSchema annotation",
+                thrown.getMessage());
+    }
 
-        @Test
-        public void jsonSchemaPathNullTest() {
-                ValidateJsonSchemaArgumentResolver resolver =
-                                ValidateJsonSchemaArgumentResolver.newInstance();
+    @Test
+    public void jsonSchemaPathNullTest() {
+        ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver.newInstance();
 
-                LoadJsonSchemaException thrown = assertThrows(LoadJsonSchemaException.class,
-                                () -> ArgumentResolverMockHelper.resolveArgument(resolver,
-                                                ExampleValue.class, "{}",
-                                                ValidateJsonSchemaVersion.V7, null),
-                                "Expected LoadJsonSchemaException exception");
+        LoadJsonSchemaException thrown = assertThrows(LoadJsonSchemaException.class,
+                () -> ArgumentResolverMockHelper.resolveArgument(resolver,
+                        ExampleValue.class, "{}",
+                        ValidateJsonSchemaVersion.V7, null),
+                "Expected LoadJsonSchemaException exception");
 
-                assertEquals("schemaPath is null in @ValidateJsonSchema annotation",
-                                thrown.getMessage());
-        }
+        assertEquals("schemaPath is null in @ValidateJsonSchema annotation",
+                thrown.getMessage());
+    }
 
-        @Test
-        public void missingSchemaTest() {
-                ValidateJsonSchemaArgumentResolver resolver =
-                                ValidateJsonSchemaArgumentResolver.newInstance();
+    @Test
+    public void missingSchemaTest() {
+        ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver.newInstance();
 
-                LoadJsonSchemaException thrown = assertThrows(LoadJsonSchemaException.class,
-                                () -> ArgumentResolverMockHelper.resolveArgument(resolver,
-                                                ExampleValue.class, "{}",
-                                                ValidateJsonSchemaVersion.V7,
-                                                "classpath:doesnotexist"),
-                                "Expected LoadJsonSchemaException exception");
+        LoadJsonSchemaException thrown = assertThrows(LoadJsonSchemaException.class,
+                () -> ArgumentResolverMockHelper.resolveArgument(resolver,
+                        ExampleValue.class, "{}",
+                        ValidateJsonSchemaVersion.V7,
+                        "classpath:doesnotexist"),
+                "Expected LoadJsonSchemaException exception");
 
-                assertEquals("JSON Schema failed to load from path: classpath:doesnotexist",
-                                thrown.getMessage());
+        assertEquals("JSON Schema failed to load from path: classpath:doesnotexist",
+                thrown.getMessage());
 
-        }
+    }
 }

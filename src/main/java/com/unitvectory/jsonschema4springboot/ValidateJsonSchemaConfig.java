@@ -49,5 +49,6 @@ public interface ValidateJsonSchemaConfig {
      * @param version the JSON Schema version
      */
     default void customizeJsonSchemaFactoryBuilder(JsonSchemaFactory.Builder builder,
-            ValidateJsonSchemaVersion version) {}
+            ValidateJsonSchemaVersion version) {
+    }
 }

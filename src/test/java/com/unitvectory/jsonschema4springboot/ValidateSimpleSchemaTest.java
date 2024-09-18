@@ -38,8 +38,7 @@ public class ValidateSimpleSchemaTest extends JsonNodeParamUnit {
     @Override
     protected JsonNode process(JsonNode input, String context) {
 
-        ValidateJsonSchemaArgumentResolver resolver =
-                ValidateJsonSchemaArgumentResolver.newInstance();
+        ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver.newInstance();
 
         try {
             String json = objectMapper.writeValueAsString(input);
