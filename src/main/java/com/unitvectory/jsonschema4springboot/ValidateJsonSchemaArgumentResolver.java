@@ -22,6 +22,8 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
+
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonMetaSchema;
@@ -32,6 +34,8 @@ import com.networknt.schema.SchemaLocation;
 import com.networknt.schema.SchemaValidatorsConfig;
 import com.networknt.schema.ValidationMessage;
 import com.networknt.schema.SpecVersion.VersionFlag;
+import com.networknt.schema.serialization.DefaultJsonNodeReader;
+
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 
@@ -142,7 +146,12 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
                 StandardCharsets.UTF_8);
 
         // Parse into a JsonNode, needed for validation
-        JsonNode json = objectMapper.readTree(jsonString);
+        JsonNode json = null;
+        try {
+            json = objectMapper.readTree(jsonString);
+        } catch (JsonParseException ex) {
+            throw new ValidateJsonSchemaException(ex);
+        }
 
         // Validate the Json
         Set<ValidationMessage> validationResult = jsonSchema.validate(json);
@@ -163,7 +172,7 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
         VersionFlag versionFlag = validateJsonSchemaVersion.getSpecVersion();
         JsonSchemaVersion jsonSchemaVersion = JsonSchemaFactory.checkVersion(versionFlag);
         JsonMetaSchema metaSchema = jsonSchemaVersion.getInstance();
-        builder.jsonMapper(this.objectMapper);
+        builder.jsonNodeReader(DefaultJsonNodeReader.builder().jsonMapper(this.objectMapper).build());
         builder.metaSchema(metaSchema);
         builder.defaultMetaSchemaIri(metaSchema.getIri());
         config.customizeJsonSchemaFactoryBuilder(builder, validateJsonSchemaVersion);

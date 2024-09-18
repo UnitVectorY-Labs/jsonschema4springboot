@@ -15,6 +15,7 @@ package com.unitvectory.jsonschema4springboot;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.PathType;
 import com.networknt.schema.SchemaValidatorsConfig;
 
 /**
@@ -39,7 +40,11 @@ public interface ValidateJsonSchemaConfig {
      * @return the SchemaValidatorsConfig
      */
     default SchemaValidatorsConfig getSchemaValidatorsConfig() {
-        return new SchemaValidatorsConfig();
+        return new SchemaValidatorsConfig.Builder()
+                .pathType(PathType.LEGACY)
+                .errorMessageKeyword("message")
+                .nullableKeywordEnabled(true)
+                .build();
     }
 
     /**

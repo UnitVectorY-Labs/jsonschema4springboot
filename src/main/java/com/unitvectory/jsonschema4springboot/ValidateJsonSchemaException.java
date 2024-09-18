@@ -14,6 +14,8 @@
 package com.unitvectory.jsonschema4springboot;
 
 import java.util.Set;
+
+import com.fasterxml.jackson.core.JsonParseException;
 import com.networknt.schema.ValidationMessage;
 import lombok.Getter;
 import lombok.NonNull;
@@ -39,5 +41,16 @@ public class ValidateJsonSchemaException extends RuntimeException {
     public ValidateJsonSchemaException(@NonNull Set<ValidationMessage> validationResult) {
         super("JSON did not validate against JSON Schema");
         this.validationResult = validationResult;
+    }
+
+    ValidateJsonSchemaException(@NonNull JsonParseException jsonParseException) {
+        super("JSON payload invalid an could not be parsed", jsonParseException);
+        String message = jsonParseException.getMessage();
+
+        // This cannot be null, exception will default to "N/A" if message is not set
+        // We only want the first line as it contains the primary details
+        message = message.split("\n")[0];
+
+        this.validationResult = Set.of(ValidationMessage.builder().message(message).build());
     }
 }

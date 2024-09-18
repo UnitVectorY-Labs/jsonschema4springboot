@@ -83,6 +83,48 @@ public class ValidateJsonSchemaArgumentResolverTest {
     }
 
     @Test
+    public void malformedJsonTest() throws Exception {
+
+        ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver.newInstance();
+
+        ValidateJsonSchemaException thrown = assertThrows(ValidateJsonSchemaException.class,
+                () -> ArgumentResolverMockHelper.resolveArgument(resolver,
+                        ExampleValue.class, "{\"foo\"}",
+                        ValidateJsonSchemaVersion.V7,
+                        "classpath:schema/simpleschemaV7.json"),
+                "Expected ValidateJsonSchemaException exception");
+
+        assertEquals("JSON payload invalid an could not be parsed", thrown.getMessage());
+
+        assertEquals(1, thrown.getValidationResult().size());
+
+        ValidationMessage validationMessage = thrown.getValidationResult().iterator().next();
+        assertEquals("Unexpected character ('}' (code 125)): was expecting a colon to separate field name and value",
+                validationMessage.getMessage());
+    }
+
+    @Test
+    public void malformed2JsonTest() throws Exception {
+
+        ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver.newInstance();
+
+        ValidateJsonSchemaException thrown = assertThrows(ValidateJsonSchemaException.class,
+                () -> ArgumentResolverMockHelper.resolveArgument(resolver,
+                        ExampleValue.class, "{\"foo\":\"b}",
+                        ValidateJsonSchemaVersion.V7,
+                        "classpath:schema/simpleschemaV7.json"),
+                "Expected ValidateJsonSchemaException exception");
+
+        assertEquals("JSON payload invalid an could not be parsed", thrown.getMessage());
+
+        assertEquals(1, thrown.getValidationResult().size());
+
+        ValidationMessage validationMessage = thrown.getValidationResult().iterator().next();
+        assertEquals("Unexpected end-of-input: was expecting closing quote for a string value",
+                validationMessage.getMessage());
+    }
+
+    @Test
     public void invalidJsonTest() throws Exception {
 
         ValidateJsonSchemaArgumentResolver resolver = ValidateJsonSchemaArgumentResolver.newInstance();
