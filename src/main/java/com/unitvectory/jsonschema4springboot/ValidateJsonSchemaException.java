@@ -47,9 +47,9 @@ public class ValidateJsonSchemaException extends RuntimeException {
         super("JSON payload invalid an could not be parsed", jsonParseException);
         String message = jsonParseException.getMessage();
 
-        if(message != null){
-            message = message.split("\n")[0];
-        }
+        // This cannot be null, exception will default to "N/A" if message is not set
+        // We only want the first line as it contains the primary details
+        message = message.split("\n")[0];
 
         this.validationResult = Set.of(ValidationMessage.builder().message(message).build());
     }
