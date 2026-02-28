@@ -13,10 +13,11 @@
  */
 package com.unitvectory.jsonschema4springboot;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.PathType;
-import com.networknt.schema.SchemaValidatorsConfig;
+import tools.jackson.databind.ObjectMapper;
+import com.networknt.schema.SchemaRegistry;
+import com.networknt.schema.SchemaRegistryConfig;
+import com.networknt.schema.path.PathType;
+import com.networknt.schema.serialization.JsonMapperFactory;
 
 /**
  * The configuration for validating the JSON Schema.
@@ -31,29 +32,28 @@ public interface ValidateJsonSchemaConfig {
      * @return the object mapper
      */
     default ObjectMapper getObjectMapper() {
-        return new ObjectMapper();
+        return JsonMapperFactory.getInstance();
     }
 
     /**
-     * Get the SchemaValidatorsConfig
+     * Get the SchemaRegistryConfig
      * 
-     * @return the SchemaValidatorsConfig
+     * @return the SchemaRegistryConfig
      */
-    default SchemaValidatorsConfig getSchemaValidatorsConfig() {
-        return new SchemaValidatorsConfig.Builder()
+    default SchemaRegistryConfig getSchemaRegistryConfig() {
+        return SchemaRegistryConfig.builder()
                 .pathType(PathType.LEGACY)
                 .errorMessageKeyword("message")
-                .nullableKeywordEnabled(true)
                 .build();
     }
 
     /**
-     * Customizes the JsonSchemaFactory builder
+     * Customizes the SchemaRegistry builder
      * 
      * @param builder the builder
      * @param version the JSON Schema version
      */
-    default void customizeJsonSchemaFactoryBuilder(JsonSchemaFactory.Builder builder,
+    default void customizeSchemaRegistryBuilder(SchemaRegistry.Builder builder,
             ValidateJsonSchemaVersion version) {
     }
 }
