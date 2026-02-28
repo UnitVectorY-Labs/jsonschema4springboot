@@ -16,12 +16,12 @@ package com.unitvectory.jsonschema4springboot;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.Set;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.networknt.schema.ValidationMessage;
+import com.networknt.schema.Error;
+import tools.jackson.core.exc.StreamReadException;
 
 /**
  * The ValidateJsonSchemaException test cases.
@@ -32,7 +32,7 @@ public class ValidateJsonSchemaExceptionTest {
 
     @Test
     public void nullValidationResultsTest() {
-        Set<ValidationMessage> validationResult = null;
+        List<Error> validationResult = null;
         NullPointerException thrown = assertThrows(NullPointerException.class,
                 () -> new ValidateJsonSchemaException(validationResult));
 
@@ -40,11 +40,11 @@ public class ValidateJsonSchemaExceptionTest {
     }
 
     @Test
-    public void nullJsonParseExceptionTest() {
-        JsonParseException jsonParseException = null;
+    public void nullStreamReadExceptionTest() {
+        StreamReadException streamReadException = null;
         NullPointerException thrown = assertThrows(NullPointerException.class,
-                () -> new ValidateJsonSchemaException(jsonParseException));
+                () -> new ValidateJsonSchemaException(streamReadException));
 
-        assertEquals("jsonParseException is marked non-null but is null", thrown.getMessage());
+        assertEquals("streamReadException is marked non-null but is null", thrown.getMessage());
     }
 }
