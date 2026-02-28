@@ -13,10 +13,10 @@
  */
 package com.unitvectory.jsonschema4springboot;
 
-import java.util.Set;
+import java.util.List;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.networknt.schema.ValidationMessage;
+import com.networknt.schema.Error;
+import tools.jackson.core.exc.StreamReadException;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -31,26 +31,26 @@ public class ValidateJsonSchemaException extends RuntimeException {
      * The validation messages when the JSON Schema does not validate.
      */
     @Getter
-    private Set<ValidationMessage> validationResult;
+    private List<Error> validationResult;
 
     /**
      * Creates a new instance of the ValidateJsonSchemaException class
      * 
      * @param validationResult the validation messages
      */
-    public ValidateJsonSchemaException(@NonNull Set<ValidationMessage> validationResult) {
+    public ValidateJsonSchemaException(@NonNull List<Error> validationResult) {
         super("JSON did not validate against JSON Schema");
         this.validationResult = validationResult;
     }
 
-    ValidateJsonSchemaException(@NonNull JsonParseException jsonParseException) {
-        super("JSON payload invalid an could not be parsed", jsonParseException);
-        String message = jsonParseException.getMessage();
+    ValidateJsonSchemaException(@NonNull StreamReadException streamReadException) {
+        super("JSON payload invalid an could not be parsed", streamReadException);
+        String message = streamReadException.getMessage();
 
         // This cannot be null, exception will default to "N/A" if message is not set
         // We only want the first line as it contains the primary details
         message = message.split("\n")[0];
 
-        this.validationResult = Set.of(ValidationMessage.builder().message(message).build());
+        this.validationResult = List.of(Error.builder().message(message).build());
     }
 }

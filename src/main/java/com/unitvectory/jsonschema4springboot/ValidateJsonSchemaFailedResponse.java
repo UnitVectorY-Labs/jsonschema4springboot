@@ -16,7 +16,7 @@ package com.unitvectory.jsonschema4springboot;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import com.networknt.schema.ValidationMessage;
+import com.networknt.schema.Error;
 import lombok.Getter;
 
 /**
@@ -45,7 +45,7 @@ public class ValidateJsonSchemaFailedResponse {
     public ValidateJsonSchemaFailedResponse(ValidateJsonSchemaException ex) {
         this.message = "JSON validation failed";
         List<String> detailsList = new ArrayList<String>();
-        for (ValidationMessage m : ex.getValidationResult()) {
+        for (Error m : ex.getValidationResult()) {
             detailsList.add(m.getMessage());
         }
 

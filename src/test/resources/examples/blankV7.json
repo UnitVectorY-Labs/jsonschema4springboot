@@ -3,6 +3,6 @@
   "context": "simpleschemaV7.json",
   "output": {
     "message": "JSON validation failed",
-    "details": ["$: required property 'value' not found"]
+    "details": ["required property 'value' not found"]
   }
 }
