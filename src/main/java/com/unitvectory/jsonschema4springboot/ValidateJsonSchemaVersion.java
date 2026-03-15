@@ -13,8 +13,7 @@
  */
 package com.unitvectory.jsonschema4springboot;
 
-import com.networknt.schema.SpecVersion;
-import com.networknt.schema.SpecVersion.VersionFlag;
+import com.networknt.schema.SpecificationVersion;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,28 +29,28 @@ public enum ValidateJsonSchemaVersion {
     /**
      * Version 4.
      */
-    V4(VersionFlag.V4),
+    V4(SpecificationVersion.DRAFT_4),
 
     /**
      * Version 6
      */
-    V6(VersionFlag.V6),
+    V6(SpecificationVersion.DRAFT_6),
 
     /**
      * Version 7
      */
-    V7(VersionFlag.V7),
+    V7(SpecificationVersion.DRAFT_7),
 
     /**
      * Version 2019-09
      */
-    V201909(VersionFlag.V201909),
+    V201909(SpecificationVersion.DRAFT_2019_09),
 
     /**
      * Version 2020-12
      */
-    V202012(VersionFlag.V202012);
+    V202012(SpecificationVersion.DRAFT_2020_12);
 
     @Getter(AccessLevel.PACKAGE)
-    private final SpecVersion.VersionFlag specVersion;
+    private final SpecificationVersion specVersion;
 }
