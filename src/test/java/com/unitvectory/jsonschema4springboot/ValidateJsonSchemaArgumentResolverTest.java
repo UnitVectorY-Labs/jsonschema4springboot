@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.bind.annotation.RequestBody;
-import com.networknt.schema.ValidationMessage;
+import com.networknt.schema.Error;
 
 /**
  * The ValidateJsonSchemaArgumentResolver test cases.
@@ -98,8 +98,8 @@ public class ValidateJsonSchemaArgumentResolverTest {
 
         assertEquals(1, thrown.getValidationResult().size());
 
-        ValidationMessage validationMessage = thrown.getValidationResult().iterator().next();
-        assertEquals("Unexpected character ('}' (code 125)): was expecting a colon to separate field name and value",
+        Error validationMessage = thrown.getValidationResult().iterator().next();
+        assertEquals("Unexpected character ('}' (code 125)): was expecting a colon to separate property name and value",
                 validationMessage.getMessage());
     }
 
@@ -119,7 +119,7 @@ public class ValidateJsonSchemaArgumentResolverTest {
 
         assertEquals(1, thrown.getValidationResult().size());
 
-        ValidationMessage validationMessage = thrown.getValidationResult().iterator().next();
+        Error validationMessage = thrown.getValidationResult().iterator().next();
         assertEquals("Unexpected end-of-input: was expecting closing quote for a string value",
                 validationMessage.getMessage());
     }
@@ -140,8 +140,8 @@ public class ValidateJsonSchemaArgumentResolverTest {
 
         assertEquals(1, thrown.getValidationResult().size());
 
-        ValidationMessage validationMessage = thrown.getValidationResult().iterator().next();
-        assertEquals("$: required property 'value' not found",
+        Error validationMessage = thrown.getValidationResult().iterator().next();
+        assertEquals("required property 'value' not found",
                 validationMessage.getMessage());
     }
 
