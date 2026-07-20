@@ -14,7 +14,7 @@
 package com.unitvectory.jsonschema4springboot;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Set;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.core.MethodParameter;
 import org.springframework.util.StreamUtils;
@@ -23,18 +23,17 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.networknt.schema.JsonMetaSchema;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.JsonSchemaVersion;
+import com.networknt.schema.Error;
+import com.networknt.schema.InputFormat;
+import com.networknt.schema.Schema;
 import com.networknt.schema.SchemaLocation;
-import com.networknt.schema.SchemaValidatorsConfig;
-import com.networknt.schema.ValidationMessage;
-import com.networknt.schema.SpecVersion.VersionFlag;
-import com.networknt.schema.serialization.DefaultJsonNodeReader;
+import com.networknt.schema.SchemaRegistry;
+import com.networknt.schema.SchemaRegistryConfig;
+import com.networknt.schema.SpecificationVersion;
+import com.networknt.schema.serialization.DefaultNodeReader;
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
@@ -47,14 +46,14 @@ import lombok.NonNull;
 public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgumentResolver {
 
     /**
-     * The factories
+     * The schema registries, one per schema version
      */
-    private final ConcurrentHashMap<ValidateJsonSchemaVersion, JsonSchemaFactory> factories;
+    private final ConcurrentHashMap<ValidateJsonSchemaVersion, SchemaRegistry> registries;
 
     /**
-     * The schema validatiors config used for all schemas
+     * The schema registry config used for all schemas
      */
-    private final SchemaValidatorsConfig schemaValidatorsConfig;
+    private final SchemaRegistryConfig schemaRegistryConfig;
 
     /**
      * The Jackson ObjectMapper
@@ -72,9 +71,9 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
      * @param config the config
      */
     private ValidateJsonSchemaArgumentResolver(ValidateJsonSchemaConfig config) {
-        this.factories = new ConcurrentHashMap<>();
+        this.registries = new ConcurrentHashMap<>();
         this.objectMapper = config.getObjectMapper();
-        this.schemaValidatorsConfig = config.getSchemaValidatorsConfig();
+        this.schemaRegistryConfig = config.getSchemaRegistryConfig();
         this.config = config;
     }
 
@@ -125,16 +124,16 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
             throw new LoadJsonSchemaException("version is null in @ValidateJsonSchema annotation");
         }
 
-        // Get the factory for the version, only one factory per version as the caching
-        // is utilized
-        // and in theory there could be multiple versions used concurrently
-        JsonSchemaFactory factory = this.factories.computeIfAbsent(jsonSchemaVersion,
-                v -> createFactory(jsonSchemaVersion));
+        // Get the registry for the version, only one registry per version as the
+        // caching is utilized and in theory there could be multiple versions used
+        // concurrently
+        SchemaRegistry registry = this.registries.computeIfAbsent(jsonSchemaVersion,
+                v -> createRegistry(jsonSchemaVersion));
 
         // Load the schema
-        JsonSchema jsonSchema;
+        Schema schema;
         try {
-            jsonSchema = factory.getSchema(SchemaLocation.of(schemaPath), this.schemaValidatorsConfig);
+            schema = registry.getSchema(SchemaLocation.of(schemaPath));
         } catch (Exception e) {
             throw new LoadJsonSchemaException("JSON Schema failed to load from path: " + schemaPath,
                     e);
@@ -146,15 +145,15 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
                 StandardCharsets.UTF_8);
 
         // Parse into a JsonNode, needed for validation
-        JsonNode json = null;
+        JsonNode json;
         try {
             json = objectMapper.readTree(jsonString);
-        } catch (JsonParseException ex) {
+        } catch (StreamReadException ex) {
             throw new ValidateJsonSchemaException(ex);
         }
 
         // Validate the Json
-        Set<ValidationMessage> validationResult = jsonSchema.validate(json);
+        List<Error> validationResult = schema.validate(json);
         if (validationResult.isEmpty()) {
             // Convert the JSON into the object
             return objectMapper.treeToValue(json, parameter.getParameterType());
@@ -164,18 +163,14 @@ public class ValidateJsonSchemaArgumentResolver implements HandlerMethodArgument
         }
     }
 
-    private final JsonSchemaFactory createFactory(
-            ValidateJsonSchemaVersion validateJsonSchemaVersion) {
-        JsonSchemaFactory.getInstance(VersionFlag.V7);
-        JsonSchemaFactory.Builder builder = JsonSchemaFactory.builder();
-
-        VersionFlag versionFlag = validateJsonSchemaVersion.getSpecVersion();
-        JsonSchemaVersion jsonSchemaVersion = JsonSchemaFactory.checkVersion(versionFlag);
-        JsonMetaSchema metaSchema = jsonSchemaVersion.getInstance();
-        builder.jsonNodeReader(DefaultJsonNodeReader.builder().jsonMapper(this.objectMapper).build());
-        builder.metaSchema(metaSchema);
-        builder.defaultMetaSchemaIri(metaSchema.getIri());
-        config.customizeJsonSchemaFactoryBuilder(builder, validateJsonSchemaVersion);
+    private SchemaRegistry createRegistry(ValidateJsonSchemaVersion validateJsonSchemaVersion) {
+        SpecificationVersion specVersion = validateJsonSchemaVersion.getSpecVersion();
+        SchemaRegistry.Builder builder = SchemaRegistry.builder();
+        builder.defaultDialectId(specVersion.getDialectId());
+        builder.schemaRegistryConfig(this.schemaRegistryConfig);
+        builder.nodeReader(DefaultNodeReader.builder().jsonMapper(this.objectMapper).build());
+        config.customizeSchemaRegistryBuilder(builder, validateJsonSchemaVersion);
         return builder.build();
     }
 }
+
