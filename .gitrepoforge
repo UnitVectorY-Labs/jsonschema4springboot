@@ -1,0 +1,15 @@
+name: jsonschema4springboot
+default_branch: main
+config:
+  description: Add JSON Schema Validation to Spring Boot 3 with Annotations.
+  license: Apache-2.0
+  language: java17
+  release: none
+  release_github: true
+  status: active
+  codecov:
+    enabled: true
+    token: UJ2HAD30E7
+  maven:
+    group_id: com.unitvectory
+    artifact_id: jsonschema4springboot
