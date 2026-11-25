@@ -10,9 +10,6 @@ config:
   docs:
     enabled: false
   osv: sarif
-  codecov:
-    enabled: true
-    token: UJ2HAD30E7
   maven:
     group_id: com.unitvectory
     artifact_id: jsonschema4springboot
